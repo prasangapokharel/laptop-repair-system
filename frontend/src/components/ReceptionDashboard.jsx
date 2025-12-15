@@ -13,7 +13,7 @@ import {
   SquarePen,
   Headset,
   PlusCircle,
-  LogOut,         
+  LogOut,
 } from "lucide-react";
 
 import HomePage from "./customers/HomePage";
@@ -21,19 +21,22 @@ import MyDevice from "./customers/MyDevice";
 import MyOrder from "./customers/MyOrder";
 import OrderDetails from "./customers/OrderDetails";
 import Mainpage from "./Reception/Mainpage";
+import OrderCreation from "./Reception/OrderCreation";
 
+
+// ---------------------- NAV ITEMS ----------------------
 const navItems = [
   { icon: Home, label: "Dashboard" },
   { icon: User, label: "My Profile" },
   { icon: SquarePen, label: "Create Order" },
-  {icon:Menu,label:"My Orders"},
+  { icon: ClipboardList, label: "My Orders" },
   { icon: DollarSign, label: "Payments" },
   { icon: Headset, label: "Support" },
   { icon: LogOut, label: "Logout" },
 ];
 
 
-// --- NavItem Component ---
+// ---------------------- NAV ITEM COMPONENT ----------------------
 const NavItem = ({ icon: Icon, label, isActive, onClick }) => (
   <button
     onClick={onClick}
@@ -41,13 +44,15 @@ const NavItem = ({ icon: Icon, label, isActive, onClick }) => (
       isActive
         ? "bg-blue-600 text-white rounded-r-full shadow-lg"
         : "text-blue-200 hover:bg-blue-700 hover:text-white rounded-r-full"
-    }`}>
+    }`}
+  >
     <Icon className="w-5 h-5 mr-4" />
     <span>{label}</span>
   </button>
 );
 
-// --- Sidebar Component ---
+
+// ---------------------- SIDEBAR COMPONENT ----------------------
 const Sidebar = ({ isOpen, onClose, activePage, setActivePage }) => (
   <>
     {/* Overlay for mobile */}
@@ -58,19 +63,22 @@ const Sidebar = ({ isOpen, onClose, activePage, setActivePage }) => (
       onClick={onClose}
     />
 
-    {/* Sidebar Content */}
+    {/* Sidebar */}
     <div
       className={`fixed inset-y-0 left-0 z-50 w-64 bg-blue-800 transform lg:translate-x-0 transition-transform duration-300 ease-in-out shadow-2xl ${
         isOpen ? "translate-x-0" : "-translate-x-full"
-      }`}>
+      }`}
+    >
       <div className="flex items-center justify-between p-5 h-16 bg-blue-900 border-b border-blue-700">
         <h1 className="text-xl font-bold text-white flex items-center">
           <LayoutDashboard className="w-6 h-6 mr-2" />
           Dashboard
         </h1>
+
         <button
           onClick={onClose}
-          className="text-blue-200 lg:hidden hover:text-white transition-colors">
+          className="text-blue-200 lg:hidden hover:text-white transition-colors"
+        >
           <X className="w-6 h-6" />
         </button>
       </div>
@@ -93,15 +101,33 @@ const Sidebar = ({ isOpen, onClose, activePage, setActivePage }) => (
   </>
 );
 
+
+// ---------------------- PAGE COMPONENT MAPPING ----------------------
+const pageComponents = {
+  Dashboard: <Mainpage />,
+  "My Device": <MyDevice />,
+  "My Orders": <OrderCreation/>,
+  "Order Details": <OrderDetails />,
+  "My Profile": <div>My Profile Page Coming Soon</div>,
+  Payments: <div>Payments Page Coming Soon</div>,
+  Support: <div>Support Page Coming Soon</div>,
+  Logout: <div>Logging Out...</div>,
+};
+
+
+// ---------------------- MAIN DASHBOARD ----------------------
 const ReceptionDashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [activePage, setActivePage] = useState("Home");
+
+  // default landing page
+  const [activePage, setActivePage] = useState("Dashboard");
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
   const closeSidebar = () => setIsSidebarOpen(false);
 
   return (
     <div className="min-h-screen bg-gray-100 flex font-inter">
+      
       {/* Sidebar */}
       <Sidebar
         isOpen={isSidebarOpen}
@@ -110,36 +136,28 @@ const ReceptionDashboard = () => {
         setActivePage={setActivePage}
       />
 
-      {/* Main Content Area */}
+      {/* Main Content */}
       <div className="flex-1 lg:ml-64 flex flex-col">
-        {/* Top Header for mobile */}
+
+        {/* Top Header (mobile) */}
         <header className="sticky top-0 z-30 bg-blue-900 lg:hidden flex items-center justify-between p-4 h-16 shadow-md">
-          <h1 className="text-xl font-bold text-white">Dashboard</h1>
+          <h1 className="text-xl font-bold text-white">{activePage}</h1>
+
           <button
             onClick={toggleSidebar}
-            className="text-white hover:text-blue-200">
+            className="text-white hover:text-blue-200"
+          >
             <Menu className="w-6 h-6" />
           </button>
         </header>
 
+        {/* MAIN CONTENT AREA */}
         <main className="flex-1 p-4 sm:p-6 md:p-8">
-          {/* Conditional Rendering of Pages */}
-          {activePage === "Home" && <Mainpage />}
-          {activePage === "My Device" && <MyDevice />}
-          {activePage === "My Order" && <MyOrder />}
-          {activePage === "Order Details" && <OrderDetails />}
-          {/* {activePage === "My Device" && <MyDevice />}
-          {activePage === "My Order" && <MyOrder />}
-          {activePage === "Order Details" && <RecentOrder />}
-          {activePage === "Payment" && <QuickAction />} */}
-
-          {/* Notifications can stay below or move inside each page as needed */}
-          {/* <Notification /> */}
+          {pageComponents[activePage] || <div>Page Not Found</div>}
         </main>
       </div>
     </div>
   );
 };
 
-
-export default ReceptionDashboard
+export default ReceptionDashboard;
