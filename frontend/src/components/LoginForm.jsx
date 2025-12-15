@@ -5,10 +5,13 @@ import {
   Mail,
   Lock,
   User,
-  Globe,
   AlertTriangle,
   ChevronDown,
+  Phone,
 } from "lucide-react";
+
+import axios from "axios"; // ADDED
+import { useNavigate } from "react-router-dom"; // ADDED
 
 // -------------------- INPUT COMPONENT --------------------
 
@@ -60,56 +63,55 @@ const InputField = ({
   );
 };
 
-// -------------------- SELECT FIELD --------------------
-
-const SelectField = ({ label, name, value, onChange, icon: Icon }) => {
-  const countries = ["USA", "Canada", "UK", "Australia", "India", "Germany", "Nepal"];
-
-  return (
-    <div className="space-y-1">
-      <label className="text-pink-400 font-semibold">{label}</label>
-
-      <div className="relative">
-        {Icon && (
-          <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 pointer-events-none" />
-        )}
-
-        <select
-          name={name}
-          value={value}
-          onChange={onChange}
-          className={`w-full bg-gray-800 text-white rounded-lg px-4 py-3 border border-gray-700 
-            ${Icon ? "pl-10" : ""} 
-            focus:border-blue-500 focus:outline-none`}
-        >
-          <option value="" disabled>
-            Select country
-          </option>
-
-          {countries.map((c) => (
-            <option key={c} value={c} className="bg-gray-800">
-              {c}
-            </option>
-          ))}
-        </select>
-
-        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4" />
-      </div>
-    </div>
-  );
-};
-
 // -------------------- LOGIN FORM --------------------
 
 const LoginForm = ({ formData, handleChange, switchView }) => {
+  const navigate = useNavigate();
   const [error, setError] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.email || !formData.password) {
-      setError("Please enter email and password.");
-    } else {
-      alert("Login Submitted (Frontend Only)");
+    if (!formData.phone || !formData.password) {
+      setError("Please enter phone and password.");
+      return;
+    }
+
+    const loginData = {
+      phone: formData.phone,
+      password: formData.password,
+    };
+
+    try {
+      const res = await axios.post(
+        "http://127.0.0.1:8000/v1/auth/login",
+        loginData
+      );
+      // store token & user info
+      localStorage.setItem("token", res.data.tokens.access_token);
+      console.log(res.data.tokens.access_token);
+      localStorage.setItem("userId", res.data.user.id);
+      localStorage.setItem("fullName", res.data.user.full_name);
+      console.log("user login sucessfully");
+      if (res.data.user.is_staff === false) {
+        navigate("/customerdashboard");
+      }
+      // if (res.data.user.role) {
+      //   localStorage.setItem("role", res.data.user.role);
+      //   if (res.data.user.role === "admin") {
+      //     navigate("/admindashboard");
+      //     return;
+      //   } else if (res.data.user.role === "customer") {
+      //     navigate("/customerdashboard");
+      //     return;
+      //   }
+      // }
+      // navigate("/customerdashboard"); // redirect to dashboard or home page
+      // navigate("");
+      // redirect according to role if you have it
+      // navigate("/dashboard");
+    } catch (err) {
+      setError("Invalid phone or password");
+      console.log(err.response?.data || err.message);
     }
   };
 
@@ -127,13 +129,13 @@ const LoginForm = ({ formData, handleChange, switchView }) => {
       )}
 
       <InputField
-        label="Email"
-        name="email"
-        type="email"
-        placeholder="Enter your email"
-        value={formData.email}
+        label="Phone"
+        name="phone"
+        type="tel"
+        placeholder="Enter your phone"
+        value={formData.phone}
         onChange={handleChange}
-        icon={Mail}
+        icon={Phone}
       />
 
       <InputField
@@ -146,7 +148,9 @@ const LoginForm = ({ formData, handleChange, switchView }) => {
         icon={Lock}
       />
 
-      <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-md hover:scale-[1.01] transition">
+      <button
+        type="submit"
+        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-md hover:scale-[1.01] transition">
         <LogIn className="w-5 h-5 inline-block mr-2" />
         Log In
       </button>
@@ -162,8 +166,18 @@ const LoginForm = ({ formData, handleChange, switchView }) => {
 
 // -------------------- SIGNUP FORM --------------------
 
-const SignupForm = ({ formData, handleChange, switchView }) => {
+const SignupForm = ({ formData, handleChange, switchView, setFormData }) => {
   const [errors, setErrors] = useState({});
+  const navigate = useNavigate(); // ADDED
+
+  // Reset template after signup
+  const init = {
+    name: "",
+    email: "",
+    password: "",
+    phone: "",
+    agreeTerms: false,
+  };
 
   const validate = () => {
     const newErr = {};
@@ -171,19 +185,38 @@ const SignupForm = ({ formData, handleChange, switchView }) => {
     if (!formData.email) newErr.email = "Email is required.";
     if (!formData.password || formData.password.length < 4)
       newErr.password = "Password must be at least 4 characters.";
-    if (!formData.country) newErr.country = "Country is required.";
+    if (!formData.phone) newErr.phone = "Phone number is required.";
     if (!formData.agreeTerms) newErr.agreeTerms = "Accept terms to continue.";
-
     setErrors(newErr);
     return Object.keys(newErr).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
+    // FIXED: async added
     e.preventDefault();
-    if (validate()) {
-      alert("Signup Completed (Frontend Only)");
-      switchView("login");
+
+    if (!validate()) return;
+
+    const userData = {
+      full_name: formData.name, // <- match backend field
+      email: formData.email,
+      phone: formData.phone,
+      password: formData.password,
+    };
+
+    try {
+      const res = await axios.post(
+        "http://127.0.0.1:8000/v1/auth/register",
+        userData
+      );
+      console.log(res.data);
+      console.log("Signup successful!", res.data);
+    } catch (err) {
+      console.log(err.response?.data || err.message);
     }
+
+    setFormData(init);
+    switchView("login");
   };
 
   return (
@@ -215,6 +248,17 @@ const SignupForm = ({ formData, handleChange, switchView }) => {
       />
 
       <InputField
+        label="Phone Number"
+        name="phone"
+        type="tel"
+        placeholder="Enter your phone number"
+        value={formData.phone}
+        onChange={handleChange}
+        icon={Phone}
+        error={errors.phone}
+      />
+
+      <InputField
         label="Password"
         name="password"
         type="password"
@@ -224,18 +268,6 @@ const SignupForm = ({ formData, handleChange, switchView }) => {
         icon={Lock}
         error={errors.password}
       />
-
-      <SelectField
-        label="Country"
-        name="country"
-        value={formData.country}
-        onChange={handleChange}
-        icon={Globe}
-      />
-
-      {errors.country && (
-        <p className="text-xs text-red-500">{errors.country}</p>
-      )}
 
       <div className="flex items-start space-x-3 mt-4">
         <input
@@ -248,7 +280,9 @@ const SignupForm = ({ formData, handleChange, switchView }) => {
 
         <label className="text-gray-300 text-sm">
           I agree to the{" "}
-          <span className="text-blue-400 cursor-pointer">terms & conditions</span>
+          <span className="text-blue-400 cursor-pointer">
+            terms & conditions
+          </span>
         </label>
       </div>
 
@@ -263,17 +297,16 @@ const SignupForm = ({ formData, handleChange, switchView }) => {
 
         <button
           type="reset"
-          className="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-3 rounded-lg shadow-md hover:scale-[1.01] transition"
-        >
+          className="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-3 rounded-lg shadow-md hover:scale-[1.01] transition">
           Reset
         </button>
       </div>
 
-      <p className="text-center text-sm text-pink-400 cursor-pointer hover:text-pink-300">
+      <div className="text-center text-sm text-pink-400 cursor-pointer hover:text-pink-300">
         <button onClick={() => switchView("login")}>
           Already have an account? Log In
         </button>
-      </p>
+      </div>
     </form>
   );
 };
@@ -287,7 +320,7 @@ export default function LoginSignup() {
     name: "",
     email: "",
     password: "",
-    country: "",
+    phone: "",
     agreeTerms: false,
   });
 
@@ -303,13 +336,11 @@ export default function LoginSignup() {
   return (
     <div
       className="min-h-screen flex items-center justify-center px-4"
-      style={{ background: "linear-gradient(135deg, #1f1f3a, #0a0a1a)" }}
-    >
+      style={{ background: "linear-gradient(135deg, #1f1f3a, #0a0a1a)" }}>
       <div
         className={`w-full max-w-md p-8 rounded-2xl shadow-2xl backdrop-blur-md border 
           ${view === "login" ? "border-blue-700/50" : "border-pink-700/50"}
-          bg-gray-900/90`}
-      >
+          bg-gray-900/90`}>
         {view === "login" ? (
           <LoginForm
             formData={formData}
@@ -321,6 +352,7 @@ export default function LoginSignup() {
             formData={formData}
             handleChange={handleChange}
             switchView={setView}
+            setFormData={setFormData}
           />
         )}
       </div>

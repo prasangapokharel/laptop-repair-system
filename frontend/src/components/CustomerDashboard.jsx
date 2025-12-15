@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Home,
   Laptop,
@@ -21,7 +22,6 @@ import MyDevice from "./customers/MyDevice";
 import MyOrder from "./customers/MyOrder";
 import OrderDetails from "./customers/OrderDetails";
 
-// --- Sidebar Configuration ---
 const navItems = [
   { icon: Home, label: "Home" },
   { icon: Laptop, label: "My Device" },
@@ -94,9 +94,26 @@ const Sidebar = ({ isOpen, onClose, activePage, setActivePage }) => (
 const CustomerDashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activePage, setActivePage] = useState("Home");
+  const [checkingAuth, setCheckingAuth] = useState(true);
+  const navigate = useNavigate();
+
+  // useEffect(() => {
+  //   const token = localStorage.getItem("token");
+
+  //   console.log("I am running");
+  //   if (!token) {
+  //     navigate("/createaccount");
+  //   } else {
+  //     console.log("User is logged in");
+  //     localStorage.removeItem("token");
+  //   }
+  //   setCheckingAuth(false);
+  // }, [navigate]);
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
   const closeSidebar = () => setIsSidebarOpen(false);
+
+  if (checkingAuth) return null;
 
   return (
     <div className="min-h-screen bg-gray-100 flex font-inter">
