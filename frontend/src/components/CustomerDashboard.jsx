@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 import {
   Home,
   Laptop,
@@ -8,29 +9,26 @@ import {
   DollarSign,
   Menu,
   X,
-  ChevronDown,
-  CheckCircle,
   LayoutDashboard,
-  User,
-  PlusCircle,
 } from "lucide-react";
 
-// Import your existing components
-
+// Import your pages
 import HomePage from "./customers/HomePage";
 import MyDevice from "./customers/MyDevice";
 import MyOrder from "./customers/MyOrder";
 import OrderDetails from "./customers/OrderDetails";
+import PaymentPage from "./customers/PaymentPage";
 
+// Navigation items
 const navItems = [
   { icon: Home, label: "Home" },
-  { icon: Laptop, label: "My Device" },
+  // { icon: Laptop, label: "My Device" },
   { icon: Package, label: "My Order" },
   { icon: ClipboardList, label: "Order Details" },
   { icon: DollarSign, label: "Payment" },
 ];
 
-// --- NavItem Component ---
+// NavItem component
 const NavItem = ({ icon: Icon, label, isActive, onClick }) => (
   <button
     onClick={onClick}
@@ -41,11 +39,12 @@ const NavItem = ({ icon: Icon, label, isActive, onClick }) => (
     }`}>
     <Icon className="w-5 h-5 mr-4" />
     <span>{label}</span>
+    <span></span>
   </button>
 );
 
-// --- Sidebar Component ---
-const Sidebar = ({ isOpen, onClose, activePage, setActivePage }) => (
+// Sidebar component
+const Sidebar = ({ isOpen, onClose, activePage, setActivePage, user }) => (
   <>
     {/* Overlay for mobile */}
     <div
@@ -55,11 +54,12 @@ const Sidebar = ({ isOpen, onClose, activePage, setActivePage }) => (
       onClick={onClose}
     />
 
-    {/* Sidebar Content */}
+    {/* Sidebar content */}
     <div
       className={`fixed inset-y-0 left-0 z-50 w-64 bg-blue-800 transform lg:translate-x-0 transition-transform duration-300 ease-in-out shadow-2xl ${
         isOpen ? "translate-x-0" : "-translate-x-full"
       }`}>
+      {/* Header */}
       <div className="flex items-center justify-between p-5 h-16 bg-blue-900 border-b border-blue-700">
         <h1 className="text-xl font-bold text-white flex items-center">
           <LayoutDashboard className="w-6 h-6 mr-2" />
@@ -72,6 +72,24 @@ const Sidebar = ({ isOpen, onClose, activePage, setActivePage }) => (
         </button>
       </div>
 
+      {/* User info */}
+      <div className="flex flex-col items-center p-4 border-b border-blue-700">
+        {user ? (
+          <>
+            {/* <img
+              src={user.profilePic || "https://via.placeholder.com/48"}
+              alt="Profile"
+              className="w-12 h-12 rounded-full mb-2"
+            /> */}
+            {/* <p className="text-white font-semibold">{user.name}</p>
+            <p className="text-blue-200 text-sm">{user.email}</p> */}
+          </>
+        ) : (
+          <p className="text-white">Not logged in</p>
+        )}
+      </div>
+
+      {/* Navigation */}
       <nav className="flex flex-col space-y-2 p-4 pt-8">
         {navItems.map((item) => (
           <NavItem
@@ -90,25 +108,30 @@ const Sidebar = ({ isOpen, onClose, activePage, setActivePage }) => (
   </>
 );
 
-// --- Main Dashboard Component ---
+// Main CustomerDashboard component
 const CustomerDashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activePage, setActivePage] = useState("Home");
+  const [user, setUser] = useState(null);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const navigate = useNavigate();
 
-  // useEffect(() => {
-  //   const token = localStorage.getItem("token");
+  useEffect(() => {
+    // Get user info from localStorage
+    const storedUser = localStorage.getItem("user_info");
+    const token = localStorage.getItem("token");
+    const decode = jwtDecode(token);
+    const userId = decode.sub;
+    // console.log("Decoded User ID to be send to orderdetails:", userId);
 
-  //   console.log("I am running");
-  //   if (!token) {
-  //     navigate("/createaccount");
-  //   } else {
-  //     console.log("User is logged in");
-  //     localStorage.removeItem("token");
-  //   }
-  //   setCheckingAuth(false);
-  // }, [navigate]);
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    } else {
+      // Redirect to login if not found
+      navigate("/createaccount");
+    }
+    setCheckingAuth(false);
+  }, [navigate]);
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
   const closeSidebar = () => setIsSidebarOpen(false);
@@ -123,11 +146,12 @@ const CustomerDashboard = () => {
         onClose={closeSidebar}
         activePage={activePage}
         setActivePage={setActivePage}
+        user={user}
       />
 
-      {/* Main Content Area */}
+      {/* Main content */}
       <div className="flex-1 lg:ml-64 flex flex-col">
-        {/* Top Header for mobile */}
+        {/* Mobile header */}
         <header className="sticky top-0 z-30 bg-blue-900 lg:hidden flex items-center justify-between p-4 h-16 shadow-md">
           <h1 className="text-xl font-bold text-white">Dashboard</h1>
           <button
@@ -138,18 +162,12 @@ const CustomerDashboard = () => {
         </header>
 
         <main className="flex-1 p-4 sm:p-6 md:p-8">
-          {/* Conditional Rendering of Pages */}
           {activePage === "Home" && <HomePage />}
-          {activePage === "My Device" && <MyDevice />}
+          {/* {activePage === "My Device" && <MyDevice />} */}
           {activePage === "My Order" && <MyOrder />}
-          {activePage === "Order Details" && <OrderDetails />}
-          {/* {activePage === "My Device" && <MyDevice />}
-          {activePage === "My Order" && <MyOrder />}
-          {activePage === "Order Details" && <RecentOrder />}
-          {activePage === "Payment" && <QuickAction />} */}
-
-          {/* Notifications can stay below or move inside each page as needed */}
-          {/* <Notification /> */}
+          {activePage === "Order Details" && <OrderDetails userId={user?.id} />}
+          {activePage === "Payment" && <PaymentPage />}
+          {/* Add other pages as needed */}
         </main>
       </div>
     </div>

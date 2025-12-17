@@ -1,61 +1,6 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
-// --- Sample Data ---
-
-const ORDER_DATA = {
-  orderId: "ORD-0001",
-  status: "Pending",
-  date: "24 Apr 2024, 10:30",
-  customerName: "Ram Bahadur",
-  customerEmail: "ram003.bdr@gmail.com",
-
-  device: {
-    type: "Laptop",
-    brand: "Dell",
-    model: "Inspiron 5570",
-    serial: "SN 9B-PB4-LP-552",
-    problemDesc: "Laptop not booting up",
-    additionalNotes: "Unable to find the issue",
-  },
-
-  payment: {
-    status: "Paid",
-    method: "Online",
-    transactionId: "TX11245",
-    amount: 3300,
-    remainingBalance: 0,
-  },
-
-  condition: {
-    scratches: "Yes",
-    physicalDamage: "No",
-    accessories: "Charger, Bag, Mouse",
-  },
-
-  cost: {
-    items: [
-      { name: "Service Charge", price: 1000 },
-      { name: "Replacement Part (Keyboard)", price: 2000 },
-      { name: "Diagnostic Fee", price: 500 },
-      { name: "Discount", price: -200 },
-    ],
-    total: 3300,
-  },
-
-  statusHistory: [
-    {
-      label: "Order Received",
-      date: "24 Apr 2024, 10:30 AM",
-      type: "completed",
-    },
-    { label: "Diagnosis In Progress", date: "24 Apr 2024", type: "completed" },
-    { label: "Repairing", date: "2 Apr 2024", type: "current" },
-    { label: "Quality Check", date: "3 Apr 2024", type: "pending" },
-    { label: "Ready for Pickup", date: "3 Apr 2024", type: "pending" },
-  ],
-};
-
-// --- Utility Functions ---
+// Reusable Components -------------------------------------------------------
 
 const getStatusClasses = (status) => {
   switch (status) {
@@ -94,8 +39,7 @@ const Card = ({
   bgColor = "bg-white",
   titleColor = "text-gray-900",
 }) => (
-  <div
-    className={`rounded-xl shadow-lg p-5 md:p-6 ${bgColor} mb-6 transition-all duration-300 hover:shadow-xl hover:scale-[1.01]`}>
+  <div className={`rounded-xl shadow-lg p-5 md:p-6 ${bgColor} mb-6`}>
     <h2
       className={`text-lg sm:text-xl font-bold ${titleColor} mb-4 border-b border-gray-300/50 pb-2`}>
       {title}
@@ -104,27 +48,21 @@ const Card = ({
   </div>
 );
 
-// --- Status History Timeline ---
+// Status timeline ----------------------------------------------------------
 const StatusHistory = ({ history }) => {
   const getTimelineStyle = (type) => {
     switch (type) {
       case "completed":
         return {
-          icon: "text-white bg-blue-600 ring-2 ring-blue-300",
+          icon: "text-white bg-blue-600",
           line: "bg-blue-300",
           text: "text-blue-700",
         };
       case "current":
         return {
-          icon: "text-blue-600 bg-white border-2 border-blue-600 ring-4 ring-blue-100",
+          icon: "text-blue-600 bg-white border-2 border-blue-600",
           line: "bg-gray-300",
           text: "text-blue-800 font-bold",
-        };
-      case "pending":
-        return {
-          icon: "text-gray-400 bg-white border-2 border-gray-400",
-          line: "bg-gray-300",
-          text: "text-gray-600",
         };
       default:
         return {
@@ -149,30 +87,13 @@ const StatusHistory = ({ history }) => {
             <div key={index} className="flex mb-8 last:mb-0 items-start">
               {!isLast && (
                 <div
-                  className={`absolute left-[11.5px] sm:left-[13.5px] top-4 bottom-[-10px] w-0.5 ${style.line}`}></div>
+                  className={`absolute left-[13px] top-4 -bottom-2.5 w-0.5 ${style.line}`}></div>
               )}
 
               <div
-                className={`relative z-10 w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-xs font-bold mr-3 ${style.icon}`}>
-                {item.type === "completed" && (
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-3 w-3"
-                    viewBox="0 0 20 20"
-                    fill="currentColor">
-                    <path
-                      fillRule="evenodd"
-                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                )}
-                {item.type === "current" && (
-                  <div className="w-2 h-2 rounded-full bg-blue-600"></div>
-                )}
-              </div>
+                className={`relative z-10 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold mr-3 ${style.icon}`}></div>
 
-              <div className="flex-1 min-w-0 pt-0.5">
+              <div className="flex-1 min-w-0">
                 <p className={`text-sm sm:text-base ${style.text}`}>
                   {item.label}
                 </p>
@@ -186,23 +107,22 @@ const StatusHistory = ({ history }) => {
   );
 };
 
-// --- Section Components ---
+// Device info --------------------------------------------------------------
 const DeviceInformationSection = ({ data }) => (
   <Card
     title="Device Information"
     bgColor="bg-blue-100/50"
     titleColor="text-blue-700">
     <div className="space-y-2">
-      <InfoRow label="Device Type" value={data.device.type} />
-      <InfoRow label="Brand" value={data.device.brand} />
-      <InfoRow label="Model" value={data.device.model} />
-      <InfoRow label="Serial Number" value={data.device.serial} />
-      <InfoRow label="Problem Desc." value={data.device.problemDesc} />
-      <InfoRow label="Additional Notes" value={data.device.additionalNotes} />
+      <InfoRow label="Device Type" value={data.type} />
+      <InfoRow label="Brand" value={data.brand} />
+      <InfoRow label="Model" value={data.model} />
+      <InfoRow label="Problem" value={data.problem} />
     </div>
   </Card>
 );
 
+// Payment info -------------------------------------------------------------
 const PaymentInformationSection = ({ data }) => (
   <Card
     title="Payment Information"
@@ -210,122 +130,128 @@ const PaymentInformationSection = ({ data }) => (
     titleColor="text-gray-700">
     <div className="space-y-2">
       <InfoRow
-        label="Payment Status"
-        value={data.payment.status}
+        label="Status"
+        value={data.status}
         valueClassName={`${getStatusClasses(
-          data.payment.status
-        )} px-3 py-1 text-xs font-bold rounded-full`}
+          data.status
+        )} px-3 py-1 rounded-full`}
       />
-      <InfoRow label="Payment Method" value={data.payment.method} />
-      <InfoRow label="Transaction ID" value={data.payment.transactionId} />
-      <InfoRow
-        label="Amount Paid"
-        value={`Rs. ${data.payment.amount.toLocaleString()}`}
-      />
-      <InfoRow
-        label="Remaining Balance"
-        value={`Rs. ${data.payment.remainingBalance.toLocaleString()}`}
-      />
+      <InfoRow label="Total Cost" value={`Rs. ${data.total_cost}`} />
+      <InfoRow label="Discount" value={`Rs. ${data.discount}`} />
+      <InfoRow label="Final Amount" value={`Rs. ${data.final}`} />
     </div>
   </Card>
 );
 
-const DeviceConditionSection = ({ data }) => (
-  <Card
-    title="Device Condition on Arrival"
-    bgColor="bg-blue-100/50"
-    titleColor="text-blue-700">
-    <div className="space-y-2">
-      <InfoRow label="Scratches" value={data.condition.scratches} />
-      <InfoRow label="Physical Damage" value={data.condition.physicalDamage} />
-      <InfoRow
-        label="Accessories Included"
-        value={data.condition.accessories}
-      />
-    </div>
-  </Card>
-);
+// Main Component -----------------------------------------------------------
+const OrderDetails = ({ userId }) => {
+  const [order, setOrder] = useState(null);
 
-const CostBreakdownSection = ({ data }) => (
-  <Card
-    title="Cost Breakdown"
-    bgColor="bg-gray-100/50"
-    titleColor="text-gray-700">
-    <div className="space-y-2 text-sm sm:text-base">
-      {data.cost.items.map((item) => (
-        <div
-          key={item.name}
-          className="flex justify-between pb-2 border-b border-gray-300/50 last:border-b-0">
-          <span className="text-gray-600">{item.name}</span>
-          <span
-            className={`font-medium ${
-              item.price < 0 ? "text-red-600" : "text-gray-800"
-            }`}>
-            {item.price < 0
-              ? `- Rs. ${Math.abs(item.price).toLocaleString()}`
-              : `Rs. ${item.price.toLocaleString()}`}
-          </span>
-        </div>
-      ))}
+  useEffect(() => {
+    if (userId) {
+      loadOrder();
+    }
+  }, [userId]);
 
-      <div className="flex justify-between pt-3 font-extrabold text-xl border-t-2 border-blue-200">
-        <span>Total</span>
-        <span className="text-blue-700">
-          Rs. {data.cost.total.toLocaleString()}
-        </span>
-      </div>
-    </div>
-  </Card>
-);
+  const loadOrder = async () => {
+    if (!userId) return;
 
-// --- Main Component ---
-const OrderDetails = () => {
-  const data = ORDER_DATA;
-  const statusClasses = getStatusClasses(data.status);
+    try {
+      const res = await fetch(
+        `http://localhost:8000/v1/orders?customer_id=${userId}`
+      );
+      const orders = await res.json();
+
+      if (!orders.length) return;
+
+      const order = orders[0];
+
+      const [usersRes, devicesRes] = await Promise.all([
+        fetch("http://localhost:8000/v1/users"),
+        fetch("http://localhost:8000/v1/devices"),
+      ]);
+
+      const users = await usersRes.json();
+      const devices = await devicesRes.json();
+
+      const user = users.find((u) => u.id === order.customer_id);
+      const device = devices.find((d) => d.id === order.device_id);
+
+      const final = {
+        id: order.id,
+        date: order.created_at,
+        status: order.status,
+        customerName: user?.full_name || "Unknown",
+        customerEmail: user?.email || "Unknown",
+
+        device: {
+          type: device?.name || "Unknown",
+          brand: "Unknown",
+          model: "Unknown",
+          problem: order.note || "N/A",
+        },
+
+        payment: {
+          status: order.status === "Completed" ? "Paid" : "Pending",
+          total_cost: order.total_cost,
+          discount: order.discount,
+          final: order.total_cost,
+        },
+
+        statusHistory: [
+          { label: "Order Created", date: order.created_at, type: "completed" },
+          { label: "Repairing", date: order.updated_at, type: "current" },
+          { label: "Ready for Pickup", date: "", type: "pending" },
+        ],
+      };
+
+      setOrder(final);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  if (!order) return <div className="p-6 text-lg">Loading...</div>;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-8 font-inter antialiased">
+    <div className="min-h-screen bg-gray-50 p-4 md:p-8">
       <div className="max-w-5xl mx-auto">
-        {/* Header */}
-        <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 border-b-2 border-gray-300 pb-4 gap-4">
+        <header className="flex justify-between items-start mb-8 border-b-2 border-gray-300 pb-4">
           <div>
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-blue-700">
+            <h1 className="text-3xl font-extrabold text-blue-700">
               Order Details
             </h1>
-            <p className="text-lg sm:text-xl text-gray-500 font-medium mt-1">
-              {data.orderId}
-            </p>
+            <p className="text-lg text-gray-500 mt-1">Order #{order.id}</p>
           </div>
 
-          <div className="text-right p-4 rounded-xl shadow-lg bg-white border border-gray-200 min-w-[200px] transition-all duration-300 hover:scale-[1.01]">
+          <div className="text-right p-4 bg-white shadow-md rounded-xl">
             <span
-              className={`inline-block px-4 py-1 text-xs font-bold rounded-lg mb-2 ${statusClasses}`}>
-              {data.status}
+              className={`${getStatusClasses(
+                order.status
+              )} px-4 py-1 rounded-lg`}>
+              {order.status}
             </span>
-            <p className="text-sm text-gray-600">{data.date}</p>
+            <p className="text-sm text-gray-600">{order.date}</p>
             <p className="text-md font-semibold text-gray-800 mt-1">
-              {data.customerName}
+              {order.customerName}
             </p>
             <p className="text-xs text-blue-500 break-all">
-              {data.customerEmail}
+              {order.customerEmail}
             </p>
           </div>
         </header>
 
-        {/* Grid */}
         <main className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
-            <DeviceInformationSection data={data} />
-            <DeviceConditionSection data={data} />
+            <DeviceInformationSection data={order.device} />
           </div>
 
           <div className="lg:col-span-1 space-y-6">
-            <PaymentInformationSection data={data} />
-            <CostBreakdownSection data={data} />
+            <PaymentInformationSection data={order.payment} />
           </div>
 
           <div className="lg:col-span-3">
-            <StatusHistory history={data.statusHistory} />
+            <StatusHistory history={order.statusHistory} />
           </div>
         </main>
       </div>

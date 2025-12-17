@@ -87,14 +87,14 @@ const LoginForm = ({ formData, handleChange, switchView }) => {
         loginData
       );
       // store token & user info
+      const data = await res.data;
       localStorage.setItem("token", res.data.tokens.access_token);
       console.log(res.data.tokens.access_token);
-      localStorage.setItem("userId", res.data.user.id);
-      localStorage.setItem("fullName", res.data.user.full_name);
+      // localStorage.setItem("userId", res.data.user.id);
+      // localStorage.setItem("fullName", res.data.user.full_name);
+      localStorage.setItem("user_info", JSON.stringify(data.user));
       console.log("user login sucessfully");
-      if (res.data.user.is_staff === false) {
-        navigate("/customerdashboard");
-      }
+      navigate("/customerdashboard");
       // if (res.data.user.role) {
       //   localStorage.setItem("role", res.data.user.role);
       //   if (res.data.user.role === "admin") {
@@ -168,7 +168,7 @@ const LoginForm = ({ formData, handleChange, switchView }) => {
 
 const SignupForm = ({ formData, handleChange, switchView, setFormData }) => {
   const [errors, setErrors] = useState({});
-  const navigate = useNavigate(); // ADDED
+  // const navigate = useNavigate(); // ADDED
 
   // Reset template after signup
   const init = {
