@@ -74,6 +74,12 @@ export default function Sidebar({
             onSelect={setSelectedItem}
           />
           <SidebarLink
+            icon={<FileText size={22} />}
+            label="Tracking"
+            isSelected={selectedItem === "Tracking"}
+            onSelect={setSelectedItem}
+          />
+          <SidebarLink
             icon={<User size={22} />}
             label="Profile"
             isSelected={selectedItem === "Profile"}

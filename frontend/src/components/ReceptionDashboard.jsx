@@ -5,6 +5,7 @@ import {
   ClipboardList,
   DollarSign,
   Menu,
+  NotebookPen ,
   X,
   ChevronDown,
   CheckCircle,
@@ -19,12 +20,15 @@ import {
 import HomePage from "./customers/HomePage";
 import MyDevice from "./customers/MyDevice";
 import MyOrder from "./customers/MyOrder";
+import CustomerRegistration from "./Reception/CustomerRegistration";
 import OrderDetails from "./customers/OrderDetails";
 import Mainpage from "./Reception/Mainpage";
+import CreateOrder from "./Reception/CreateOrder";
+import OrderManagement from "./Reception/ManageOrder";
 
 const navItems = [
   { icon: Home, label: "Dashboard" },
-  { icon: User, label: "My Profile" },
+  { icon: NotebookPen, label: "Register" },
   { icon: SquarePen, label: "Create Order" },
   {icon:Menu,label:"My Orders"},
   { icon: DollarSign, label: "Payments" },
@@ -126,8 +130,9 @@ const ReceptionDashboard = () => {
           {/* Conditional Rendering of Pages */}
           {activePage === "Home" && <Mainpage />}
           {activePage === "My Device" && <MyDevice />}
-          {activePage === "My Order" && <MyOrder />}
-          {activePage === "Order Details" && <OrderDetails />}
+       {activePage === "Create Order" && <CreateOrder />}
+        {activePage === "My Orders" && <OrderManagement />}
+          {activePage === "Register" && <CustomerRegistration />}
           {/* {activePage === "My Device" && <MyDevice />}
           {activePage === "My Order" && <MyOrder />}
           {activePage === "Order Details" && <RecentOrder />}

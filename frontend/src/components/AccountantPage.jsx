@@ -6,6 +6,8 @@ import Sidebar from "./Acccountant/Sidebar";
 import DashboardContent from "./Acccountant/DashboardContent";
 import PlaceholderContent from "./Acccountant/PlaceholderContent";
 import PaymentContent from "./Acccountant/PayamentContent";
+import Tracking from "./Acccountant/Tracking";
+import PaymentHistory from "./Acccountant/Recepits";
 
 export default function AccountantPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -22,10 +24,7 @@ export default function AccountantPage() {
         return <PaymentContent />;
       case "Receipts":
         return (
-          <PlaceholderContent
-            title="Receipts Tracking"
-            description="Upload, view, and categorize all incoming receipts and documents."
-          />
+          <PaymentHistory/>
         );
       case "Profile":
         return (
@@ -47,6 +46,10 @@ export default function AccountantPage() {
             title="Financial Reporting"
             description="Generate and download detailed financial statements and custom reports."
           />
+        );
+        case "Tracking":
+        return (
+          <Tracking/>
         );
       default:
         return <DashboardContent />;
