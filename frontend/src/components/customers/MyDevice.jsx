@@ -235,7 +235,7 @@ const Pagination = ({
 
 // --- Main Component ---
 
-const MyDevice = () => {
+const   MyDevice = () => {
   const [devices, setDevices] = useState(initialDevices);
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);

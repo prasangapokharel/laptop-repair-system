@@ -27,7 +27,7 @@ const InfoRow = ({
     </span>
 
     <span
-      className={`text-right md:text-left w-3/5 md:w-auto ${valueClassName} break-words text-sm sm:text-base`}>
+      className={`text-right md:text-left w-3/5 md:w-auto ${valueClassName} wrap-break-word text-sm sm:text-base`}>
       {value}
     </span>
   </div>
