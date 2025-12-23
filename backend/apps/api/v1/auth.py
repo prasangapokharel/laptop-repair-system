@@ -1,13 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from datetime import datetime, timedelta, timezone
 from db import get_db
-from models.user import User, RefreshToken
+from models.user import User, RefreshToken, RoleEnroll, Role
 from schemas.auth import RegisterRequest, LoginRequest, LoginResponse, RefreshRequest, RefreshResponse, TokenResponse
 from utils.security import hash_password, verify_password, create_access_token, create_refresh_token, decode_token
 from core.config import settings
-from schemas.user import UserResponse
+from schemas.user import UserResponse, RoleResponse
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -27,13 +28,26 @@ async def register(data: RegisterRequest, db: AsyncSession = Depends(get_db)):
     db.add(user)
     await db.commit()
     await db.refresh(user)
+    
+    # Reload with roles (will be empty for new users)
+    result = await db.execute(
+        select(User)
+        .options(selectinload(User.roles).selectinload(RoleEnroll.role))
+        .where(User.id == user.id)
+    )
+    user = result.scalar_one_or_none()
+    
     return user
 
 
 @router.post("/login", response_model=LoginResponse)
 async def login(data: LoginRequest, db: AsyncSession = Depends(get_db)):
     try:
-        result = await db.execute(select(User).where(User.phone == data.phone))
+        result = await db.execute(
+            select(User)
+            .options(selectinload(User.roles).selectinload(RoleEnroll.role))
+            .where(User.phone == data.phone)
+        )
         user = result.scalar_one_or_none()
         
         if not user:
@@ -67,8 +81,24 @@ async def login(data: LoginRequest, db: AsyncSession = Depends(get_db)):
         db.add(token_record)
         await db.commit()
         
+        # Build user response with roles
+        user_dict = UserResponse.model_validate(user).model_dump()
+        primary_role = None
+        try:
+            if hasattr(user, "roles") and user.roles:
+                for enroll in user.roles:
+                    if getattr(enroll, "role", None) and enroll.role.name == "Technician":
+                        primary_role = enroll.role
+                        break
+                if not primary_role:
+                    first = user.roles[0]
+                    primary_role = getattr(first, "role", None)
+        except Exception:
+            primary_role = None
+        user_dict["role"] = RoleResponse.model_validate(primary_role).model_dump() if primary_role else None
+        
         return LoginResponse(
-            user=UserResponse.model_validate(user).model_dump(),
+            user=user_dict,
             tokens=TokenResponse(access_token=access_token, refresh_token=refresh_token)
         )
     except HTTPException:
@@ -111,4 +141,3 @@ async def logout(data: RefreshRequest, db: AsyncSession = Depends(get_db)):
     if token:
         await db.delete(token)
         await db.commit()
-

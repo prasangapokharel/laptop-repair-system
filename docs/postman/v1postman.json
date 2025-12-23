@@ -105,6 +105,12 @@
 									"    pm.expect(jsonData).to.have.property('full_name');",
 									"    pm.expect(jsonData).to.have.property('phone');",
 									"    pm.collectionVariables.set('user_id', jsonData.id);",
+									"});",
+									"",
+									"pm.test(\"Response has role field\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('role');",
+									"    // New users should have null role",
 									"});"
 								],
 								"type": "text/javascript"
@@ -125,8 +131,14 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/v1/auth/register",
-							"host": ["{{base_url}}"],
-							"path": ["v1", "auth", "register"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"auth",
+								"register"
+							]
 						}
 					},
 					"response": []
@@ -150,6 +162,20 @@
 									"    pm.collectionVariables.set('access_token', jsonData.tokens.access_token);",
 									"    pm.collectionVariables.set('refresh_token', jsonData.tokens.refresh_token);",
 									"    pm.collectionVariables.set('user_id', jsonData.user.id);",
+									"});",
+									"",
+									"pm.test(\"Response has user with role\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('user');",
+									"    pm.expect(jsonData.user).to.have.property('role');",
+									"    ",
+									"    // If user has a role, validate role structure",
+									"    if (jsonData.user.role) {",
+									"        pm.expect(jsonData.user.role).to.have.property('id');",
+									"        pm.expect(jsonData.user.role).to.have.property('name');",
+									"        pm.expect(jsonData.user.role).to.have.property('description');",
+									"        pm.expect(jsonData.user.role).to.have.property('created_at');",
+									"    }",
 									"});"
 								],
 								"type": "text/javascript"
@@ -170,8 +196,14 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/v1/auth/login",
-							"host": ["{{base_url}}"],
-							"path": ["v1", "auth", "login"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"auth",
+								"login"
+							]
 						}
 					},
 					"response": []
@@ -211,8 +243,14 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/v1/auth/refresh",
-							"host": ["{{base_url}}"],
-							"path": ["v1", "auth", "refresh"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"auth",
+								"refresh"
+							]
 						}
 					},
 					"response": []
@@ -246,8 +284,14 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/v1/auth/logout",
-							"host": ["{{base_url}}"],
-							"path": ["v1", "auth", "logout"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"auth",
+								"logout"
+							]
 						}
 					},
 					"response": []
@@ -297,8 +341,13 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/v1/users",
-							"host": ["{{base_url}}"],
-							"path": ["v1", "users"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"users"
+							]
 						}
 					},
 					"response": []
@@ -332,8 +381,13 @@
 						],
 						"url": {
 							"raw": "{{base_url}}/v1/users?limit=10&offset=0",
-							"host": ["{{base_url}}"],
-							"path": ["v1", "users"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"users"
+							],
 							"query": [
 								{
 									"key": "limit",
@@ -379,8 +433,14 @@
 						],
 						"url": {
 							"raw": "{{base_url}}/v1/users/{{user_id}}",
-							"host": ["{{base_url}}"],
-							"path": ["v1", "users", "{{user_id}}"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"users",
+								"{{user_id}}"
+							]
 						}
 					},
 					"response": []
@@ -423,8 +483,14 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/v1/users/{{user_id}}",
-							"host": ["{{base_url}}"],
-							"path": ["v1", "users", "{{user_id}}"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"users",
+								"{{user_id}}"
+							]
 						}
 					},
 					"response": []
@@ -454,8 +520,14 @@
 						],
 						"url": {
 							"raw": "{{base_url}}/v1/users/{{created_user_id}}",
-							"host": ["{{base_url}}"],
-							"path": ["v1", "users", "{{created_user_id}}"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"users",
+								"{{created_user_id}}"
+							]
 						}
 					},
 					"response": []
@@ -505,8 +577,14 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/v1/users/roles",
-							"host": ["{{base_url}}"],
-							"path": ["v1", "users", "roles"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"users",
+								"roles"
+							]
 						}
 					},
 					"response": []
@@ -548,8 +626,14 @@
 						],
 						"url": {
 							"raw": "{{base_url}}/v1/users/roles",
-							"host": ["{{base_url}}"],
-							"path": ["v1", "users", "roles"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"users",
+								"roles"
+							]
 						}
 					},
 					"response": []
@@ -593,8 +677,15 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/v1/users/roles/enroll",
-							"host": ["{{base_url}}"],
-							"path": ["v1", "users", "roles", "enroll"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"users",
+								"roles",
+								"enroll"
+							]
 						}
 					},
 					"response": []
@@ -607,51 +698,51 @@
 				{
 					"name": "Device Types",
 					"item": [
-				{
-					"name": "Create Device Type",
-					"event": [
 						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"// Auto-fetch device_type_id if not set",
-									"if (!pm.collectionVariables.get('device_type_id')) {",
-									"    pm.sendRequest({",
-									"        url: pm.collectionVariables.get('base_url') + '/v1/devices/types',",
-									"        method: 'GET',",
-									"        header: { 'Authorization': 'Bearer ' + pm.collectionVariables.get('access_token') }",
-									"    }, function (err, res) {",
-									"        if (!err && res.code === 200) {",
-									"            var types = res.json();",
-									"            if (types && types.length > 0) {",
-									"                pm.collectionVariables.set('device_type_id', types[0].id);",
-									"            }",
-									"        }",
-									"    });",
-									"}"
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 201\", function () {",
-									"    pm.response.to.have.status(201);",
-									"});",
-									"",
-									"pm.test(\"Response has device type data\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData).to.have.property('id');",
-									"    pm.expect(jsonData).to.have.property('name');",
-									"    pm.collectionVariables.set('device_type_id', jsonData.id);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
+							"name": "Create Device Type",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"// Auto-fetch device_type_id if not set",
+											"if (!pm.collectionVariables.get('device_type_id')) {",
+											"    pm.sendRequest({",
+											"        url: pm.collectionVariables.get('base_url') + '/v1/devices/types',",
+											"        method: 'GET',",
+											"        header: { 'Authorization': 'Bearer ' + pm.collectionVariables.get('access_token') }",
+											"    }, function (err, res) {",
+											"        if (!err && res.code === 200) {",
+											"            var types = res.json();",
+											"            if (types && types.length > 0) {",
+											"                pm.collectionVariables.set('device_type_id', types[0].id);",
+											"            }",
+											"        }",
+											"    });",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 201\", function () {",
+											"    pm.response.to.have.status(201);",
+											"});",
+											"",
+											"pm.test(\"Response has device type data\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData).to.have.property('id');",
+											"    pm.expect(jsonData).to.have.property('name');",
+											"    pm.collectionVariables.set('device_type_id', jsonData.id);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
 							"request": {
 								"method": "POST",
 								"header": [
@@ -664,14 +755,20 @@
 										"value": "Bearer {{access_token}}"
 									}
 								],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"name\": \"DeviceType{{$randomInt}}\",\n    \"description\": \"Random device type {{$randomInt}}\"\n}"
-						},
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"DeviceType{{$randomInt}}\",\n    \"description\": \"Random device type {{$randomInt}}\"\n}"
+								},
 								"url": {
 									"raw": "{{base_url}}/v1/devices/types",
-									"host": ["{{base_url}}"],
-									"path": ["v1", "devices", "types"]
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"devices",
+										"types"
+									]
 								}
 							},
 							"response": []
@@ -705,8 +802,14 @@
 								],
 								"url": {
 									"raw": "{{base_url}}/v1/devices/types",
-									"host": ["{{base_url}}"],
-									"path": ["v1", "devices", "types"]
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"devices",
+										"types"
+									]
 								}
 							},
 							"response": []
@@ -779,8 +882,14 @@
 								},
 								"url": {
 									"raw": "{{base_url}}/v1/devices/brands",
-									"host": ["{{base_url}}"],
-									"path": ["v1", "devices", "brands"]
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"devices",
+										"brands"
+									]
 								}
 							},
 							"response": []
@@ -814,8 +923,14 @@
 								],
 								"url": {
 									"raw": "{{base_url}}/v1/devices/brands",
-									"host": ["{{base_url}}"],
-									"path": ["v1", "devices", "brands"]
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"devices",
+										"brands"
+									]
 								}
 							},
 							"response": []
@@ -888,8 +1003,14 @@
 								},
 								"url": {
 									"raw": "{{base_url}}/v1/devices/models",
-									"host": ["{{base_url}}"],
-									"path": ["v1", "devices", "models"]
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"devices",
+										"models"
+									]
 								}
 							},
 							"response": []
@@ -923,8 +1044,14 @@
 								],
 								"url": {
 									"raw": "{{base_url}}/v1/devices/models",
-									"host": ["{{base_url}}"],
-									"path": ["v1", "devices", "models"]
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"devices",
+										"models"
+									]
 								}
 							},
 							"response": []
@@ -997,8 +1124,13 @@
 								},
 								"url": {
 									"raw": "{{base_url}}/v1/devices",
-									"host": ["{{base_url}}"],
-									"path": ["v1", "devices"]
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"devices"
+									]
 								}
 							},
 							"response": []
@@ -1032,8 +1164,13 @@
 								],
 								"url": {
 									"raw": "{{base_url}}/v1/devices?limit=10&offset=0",
-									"host": ["{{base_url}}"],
-									"path": ["v1", "devices"],
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"devices"
+									],
 									"query": [
 										{
 											"key": "limit",
@@ -1079,8 +1216,14 @@
 								],
 								"url": {
 									"raw": "{{base_url}}/v1/devices/{{device_id}}",
-									"host": ["{{base_url}}"],
-									"path": ["v1", "devices", "{{device_id}}"]
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"devices",
+										"{{device_id}}"
+									]
 								}
 							},
 							"response": []
@@ -1123,8 +1266,14 @@
 								},
 								"url": {
 									"raw": "{{base_url}}/v1/devices/{{device_id}}",
-									"host": ["{{base_url}}"],
-									"path": ["v1", "devices", "{{device_id}}"]
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"devices",
+										"{{device_id}}"
+									]
 								}
 							},
 							"response": []
@@ -1154,8 +1303,14 @@
 								],
 								"url": {
 									"raw": "{{base_url}}/v1/devices/{{device_id}}",
-									"host": ["{{base_url}}"],
-									"path": ["v1", "devices", "{{device_id}}"]
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"devices",
+										"{{device_id}}"
+									]
 								}
 							},
 							"response": []
@@ -1231,8 +1386,13 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/v1/orders",
-							"host": ["{{base_url}}"],
-							"path": ["v1", "orders"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"orders"
+							]
 						}
 					},
 					"response": []
@@ -1266,8 +1426,13 @@
 						],
 						"url": {
 							"raw": "{{base_url}}/v1/orders?limit=10&offset=0",
-							"host": ["{{base_url}}"],
-							"path": ["v1", "orders"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"orders"
+							],
 							"query": [
 								{
 									"key": "limit",
@@ -1311,8 +1476,13 @@
 						],
 						"url": {
 							"raw": "{{base_url}}/v1/orders?status=Pending&limit=10&offset=0",
-							"host": ["{{base_url}}"],
-							"path": ["v1", "orders"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"orders"
+							],
 							"query": [
 								{
 									"key": "status",
@@ -1362,8 +1532,14 @@
 						],
 						"url": {
 							"raw": "{{base_url}}/v1/orders/{{order_id}}",
-							"host": ["{{base_url}}"],
-							"path": ["v1", "orders", "{{order_id}}"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"orders",
+								"{{order_id}}"
+							]
 						}
 					},
 					"response": []
@@ -1406,8 +1582,14 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/v1/orders/{{order_id}}",
-							"host": ["{{base_url}}"],
-							"path": ["v1", "orders", "{{order_id}}"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"orders",
+								"{{order_id}}"
+							]
 						}
 					},
 					"response": []
@@ -1437,8 +1619,14 @@
 						],
 						"url": {
 							"raw": "{{base_url}}/v1/orders/{{order_id}}",
-							"host": ["{{base_url}}"],
-							"path": ["v1", "orders", "{{order_id}}"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"orders",
+								"{{order_id}}"
+							]
 						}
 					},
 					"response": []
@@ -1488,8 +1676,14 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/v1/orders/assign",
-							"host": ["{{base_url}}"],
-							"path": ["v1", "orders", "assign"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"orders",
+								"assign"
+							]
 						}
 					},
 					"response": []
@@ -1523,8 +1717,15 @@
 						],
 						"url": {
 							"raw": "{{base_url}}/v1/orders/assign/{{order_id}}",
-							"host": ["{{base_url}}"],
-							"path": ["v1", "orders", "assign", "{{order_id}}"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"orders",
+								"assign",
+								"{{order_id}}"
+							]
 						}
 					},
 					"response": []
@@ -1569,8 +1770,13 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/v1/assigns",
-							"host": ["{{base_url}}"],
-							"path": ["v1", "assigns"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"assigns"
+							]
 						}
 					},
 					"response": []
@@ -1604,8 +1810,13 @@
 						],
 						"url": {
 							"raw": "{{base_url}}/v1/assigns?limit=10&offset=0",
-							"host": ["{{base_url}}"],
-							"path": ["v1", "assigns"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"assigns"
+							],
 							"query": [
 								{
 									"key": "limit",
@@ -1649,8 +1860,13 @@
 						],
 						"url": {
 							"raw": "{{base_url}}/v1/assigns?order_id={{order_id}}",
-							"host": ["{{base_url}}"],
-							"path": ["v1", "assigns"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"assigns"
+							],
 							"query": [
 								{
 									"key": "order_id",
@@ -1690,8 +1906,13 @@
 						],
 						"url": {
 							"raw": "{{base_url}}/v1/assigns?user_id={{user_id}}",
-							"host": ["{{base_url}}"],
-							"path": ["v1", "assigns"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"assigns"
+							],
 							"query": [
 								{
 									"key": "user_id",
@@ -1733,8 +1954,14 @@
 						],
 						"url": {
 							"raw": "{{base_url}}/v1/assigns/{{assign_id}}",
-							"host": ["{{base_url}}"],
-							"path": ["v1", "assigns", "{{assign_id}}"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"assigns",
+								"{{assign_id}}"
+							]
 						}
 					},
 					"response": []
@@ -1764,8 +1991,14 @@
 						],
 						"url": {
 							"raw": "{{base_url}}/v1/assigns/{{assign_id}}",
-							"host": ["{{base_url}}"],
-							"path": ["v1", "assigns", "{{assign_id}}"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"assigns",
+								"{{assign_id}}"
+							]
 						}
 					},
 					"response": []
@@ -1839,8 +2072,13 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/v1/payments",
-							"host": ["{{base_url}}"],
-							"path": ["v1", "payments"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"payments"
+							]
 						}
 					},
 					"response": []
@@ -1874,8 +2112,13 @@
 						],
 						"url": {
 							"raw": "{{base_url}}/v1/payments?limit=10&offset=0",
-							"host": ["{{base_url}}"],
-							"path": ["v1", "payments"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"payments"
+							],
 							"query": [
 								{
 									"key": "limit",
@@ -1919,8 +2162,13 @@
 						],
 						"url": {
 							"raw": "{{base_url}}/v1/payments?status=Paid&limit=10&offset=0",
-							"host": ["{{base_url}}"],
-							"path": ["v1", "payments"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"payments"
+							],
 							"query": [
 								{
 									"key": "status",
@@ -1968,8 +2216,13 @@
 						],
 						"url": {
 							"raw": "{{base_url}}/v1/payments?order_id={{order_id}}",
-							"host": ["{{base_url}}"],
-							"path": ["v1", "payments"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"payments"
+							],
 							"query": [
 								{
 									"key": "order_id",
@@ -2011,8 +2264,14 @@
 						],
 						"url": {
 							"raw": "{{base_url}}/v1/payments/{{payment_id}}",
-							"host": ["{{base_url}}"],
-							"path": ["v1", "payments", "{{payment_id}}"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"payments",
+								"{{payment_id}}"
+							]
 						}
 					},
 					"response": []
@@ -2055,8 +2314,14 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/v1/payments/{{payment_id}}",
-							"host": ["{{base_url}}"],
-							"path": ["v1", "payments", "{{payment_id}}"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"payments",
+								"{{payment_id}}"
+							]
 						}
 					},
 					"response": []
@@ -2086,8 +2351,14 @@
 						],
 						"url": {
 							"raw": "{{base_url}}/v1/payments/{{payment_id}}",
-							"host": ["{{base_url}}"],
-							"path": ["v1", "payments", "{{payment_id}}"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"payments",
+								"{{payment_id}}"
+							]
 						}
 					},
 					"response": []
@@ -2126,8 +2397,13 @@
 						],
 						"url": {
 							"raw": "{{base_url}}/v1/orders?customer_id={{user_id}}&limit=10&offset=0",
-							"host": ["{{base_url}}"],
-							"path": ["v1", "orders"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"orders"
+							],
 							"query": [
 								{
 									"key": "customer_id",
@@ -2177,8 +2453,14 @@
 						],
 						"url": {
 							"raw": "{{base_url}}/v1/orders/{{order_id}}",
-							"host": ["{{base_url}}"],
-							"path": ["v1", "orders", "{{order_id}}"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"orders",
+								"{{order_id}}"
+							]
 						}
 					},
 					"response": []
@@ -2212,8 +2494,13 @@
 						],
 						"url": {
 							"raw": "{{base_url}}/v1/payments?order_id={{order_id}}",
-							"host": ["{{base_url}}"],
-							"path": ["v1", "payments"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"payments"
+							],
 							"query": [
 								{
 									"key": "order_id",
@@ -2253,8 +2540,13 @@
 						],
 						"url": {
 							"raw": "{{base_url}}/v1/devices?limit=10&offset=0",
-							"host": ["{{base_url}}"],
-							"path": ["v1", "devices"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"devices"
+							],
 							"query": [
 								{
 									"key": "limit",
@@ -2340,4 +2632,3 @@
 		}
 	]
 }
-

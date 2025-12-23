@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
+from sqlalchemy.orm import selectinload
 from typing import List, Optional
 from db import get_db
 from models.user import User, Role, RoleEnroll
@@ -27,6 +28,14 @@ async def create_user(user_data: UserCreate, db: AsyncSession = Depends(get_db))
     db.add(user)
     await db.commit()
     await db.refresh(user)
+    
+    # Reload with roles (will be null for new users)
+    result = await db.execute(
+        select(User)
+        .options(selectinload(User.roles).selectinload(RoleEnroll.role))
+        .where(User.id == user.id)
+    )
+    user = result.scalar_one_or_none()
     return user
 
 
@@ -36,7 +45,12 @@ async def list_users(
     offset: int = Query(0, ge=0),
     db: AsyncSession = Depends(get_db)
 ):
-    result = await db.execute(select(User).limit(limit).offset(offset))
+    result = await db.execute(
+        select(User)
+        .options(selectinload(User.roles).selectinload(RoleEnroll.role))
+        .limit(limit)
+        .offset(offset)
+    )
     return result.scalars().all()
 
 
@@ -79,10 +93,19 @@ async def enroll_role(enroll_data: RoleEnrollCreate, db: AsyncSession = Depends(
 
 @router.get("/{user_id}", response_model=UserResponse)
 async def get_user(user_id: int, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(User).where(User.id == user_id))
+    result = await db.execute(
+        select(User)
+        .options(selectinload(User.roles).selectinload(RoleEnroll.role))
+        .where(User.id == user_id)
+    )
     user = result.scalar_one_or_none()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+    # Debug: Print role information
+    print(f"User {user.id} roles: {user.roles}")
+    if user.roles:
+        for role_enroll in user.roles:
+            print(f"  RoleEnroll ID: {role_enroll.id}, Role: {getattr(role_enroll, 'role', None)}")
     return user
 
 
@@ -99,6 +122,14 @@ async def update_user(user_id: int, user_data: UserUpdate, db: AsyncSession = De
     
     await db.commit()
     await db.refresh(user)
+    
+    # Reload with roles
+    result = await db.execute(
+        select(User)
+        .options(selectinload(User.roles).selectinload(RoleEnroll.role))
+        .where(User.id == user_id)
+    )
+    user = result.scalar_one_or_none()
     return user
 
 
