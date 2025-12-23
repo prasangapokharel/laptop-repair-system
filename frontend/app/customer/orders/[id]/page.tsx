@@ -1,0 +1,46 @@
+"use client";
+import { CustomerSidebar } from "@/components/sidebar/customer"
+import { SiteHeader } from "@/components/site-header"
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
+import { Separator } from "@/components/ui/separator"
+import { useOrderDetail } from "@/hooks/useOrderDetail"
+import { useParams } from "next/navigation"
+
+export default function CustomerOrderDetailPage() {
+  const params = useParams<{ id: string }>()
+  const id = Number(params.id)
+  const { data, loading, error } = useOrderDetail(id)
+
+  return (
+    <SidebarProvider>
+      <CustomerSidebar />
+      <SidebarInset>
+        <SiteHeader />
+        <div className="px-6 py-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold">Order #{id}</h2>
+          </div>
+          <Separator className="my-4" />
+          {loading && <p>Loading order...</p>}
+          {error && <p className="text-red-500">{error}</p>}
+          {!loading && !error && data && (
+            <div className="rounded-lg border p-4 bg-card shadow-sm">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-y-1 text-sm">
+                <p>Device ID: {data.device_id}</p>
+                <p>Total: रु {data.total_cost}</p>
+                <p>Cost: रु {data.cost}</p>
+                <p>Discount: रु {data.discount}</p>
+                <p>Status: {data.status}</p>
+                <p>Note: {data.note ?? "N/A"}</p>
+                <p>ETA: {data.estimated_completion_date ?? "N/A"}</p>
+                <p>Completed At: {data.completed_at ?? "N/A"}</p>
+                <p>Created At: {data.created_at}</p>
+                <p>Updated At: {data.updated_at}</p>
+              </div>
+            </div>
+          )}
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
+  )
+}
