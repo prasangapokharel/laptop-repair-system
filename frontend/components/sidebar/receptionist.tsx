@@ -11,6 +11,7 @@ import {
   IconSettings,
   IconHelp,
   IconInnerShadowTop,
+  IconAlertTriangle,
 } from "@tabler/icons-react"
 import {
   Sidebar,
@@ -33,6 +34,7 @@ const data = {
     { title: "Dashboard", url: "/receptionist/dashboard", icon: IconDashboard },
     { title: "Orders", url: "/receptionist/orders", icon: IconClipboardList },
     { title: "Devices", url: "/receptionist/devices", icon: IconDevices },
+    { title: "Problems", url: "/receptionist/problem", icon: IconAlertTriangle },
     { title: "Payments", url: "/receptionist/payments", icon: IconCash },
   ],
   documents: [

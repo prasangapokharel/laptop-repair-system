@@ -20,11 +20,15 @@ export type UserListResponse = {
   limit: number
 }
 
-export function useUsers(limit = 10, offset = 0) {
+export function useUsers(limit = 10, offset = 0, roleName?: string) {
   const [data, setData] = useState<User[]>([])
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const [refreshKey, setRefreshKey] = useState(0)
+
+  const refetch = () => setRefreshKey((prev) => prev + 1)
 
   useEffect(() => {
     let cancelled = false
@@ -32,9 +36,11 @@ export function useUsers(limit = 10, offset = 0) {
       setLoading(true)
       setError(null)
       try {
-        const res = await apiJson<UserListResponse>(
-          `/users?limit=${limit}&offset=${offset}`
-        )
+        let url = `/users?limit=${limit}&offset=${offset}`
+        if (roleName) {
+          url += `&role_name=${encodeURIComponent(roleName)}`
+        }
+        const res = await apiJson<UserListResponse>(url)
         if (!cancelled) {
           setData(res.items)
           setTotal(res.total)
@@ -51,7 +57,7 @@ export function useUsers(limit = 10, offset = 0) {
     return () => {
       cancelled = true
     }
-  }, [limit, offset])
+  }, [limit, offset, roleName, refreshKey])
 
-  return { data, total, loading, error }
+  return { data, total, loading, error, refetch }
 }

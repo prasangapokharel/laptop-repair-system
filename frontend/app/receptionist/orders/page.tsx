@@ -58,7 +58,7 @@ export default function ReceptionistOrdersPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>ID</TableHead>
+                      <TableHead>Problem</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Cost</TableHead>
                       <TableHead>Discount</TableHead>
@@ -69,7 +69,7 @@ export default function ReceptionistOrdersPage() {
                   <TableBody>
                     {data.map((order) => (
                       <TableRow key={order.id}>
-                        <TableCell>#{order.id}</TableCell>
+                        <TableCell>{order.problem?.name || "-"}</TableCell>
                         <TableCell>{order.status}</TableCell>
                         <TableCell>रु {order.cost}</TableCell>
                         <TableCell>रु {order.discount}</TableCell>

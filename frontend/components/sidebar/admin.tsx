@@ -15,6 +15,7 @@ import {
   IconCategory,
   IconBrandAppgallery,
   IconDeviceMobile,
+  IconAlertTriangle,
 } from "@tabler/icons-react"
 import {
   Sidebar,
@@ -37,6 +38,7 @@ const data = {
     { title: "Dashboard", url: "/admin/dashboard", icon: IconDashboard },
     { title: "Users", url: "/admin/users", icon: IconUsers },
     { title: "Devices", url: "/admin/devices", icon: IconDevices },
+    { title: "Problems", url: "/admin/problem", icon: IconAlertTriangle },
     { title: "Orders", url: "/admin/orders", icon: IconClipboardList },
     { title: "Payments", url: "/admin/payments", icon: IconCash },
   ],

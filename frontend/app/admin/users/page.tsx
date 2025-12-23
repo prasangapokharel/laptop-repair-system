@@ -10,6 +10,7 @@ import { useUserMutations } from "@/hooks/useUserMutations"
 import { useRouter } from "next/navigation"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Switch } from "@/components/ui/switch"
 import { useState } from "react"
 import {
   Pagination,
@@ -26,8 +27,8 @@ export default function AdminUsersPage() {
   const limit = 10
   const offset = (page - 1) * limit
   
-  const { data, total, loading, error } = useUsers(limit, offset)
-  const { deleteUser } = useUserMutations()
+  const { data, total, loading, error, refetch } = useUsers(limit, offset)
+  const { deleteUser, updateUser } = useUserMutations()
   const router = useRouter()
   
   const totalPages = Math.ceil(total / limit)
@@ -62,6 +63,7 @@ export default function AdminUsersPage() {
                       <TableHead>Phone</TableHead>
                       <TableHead>Role</TableHead>
                       <TableHead>Staff</TableHead>
+                      <TableHead>Active</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -74,6 +76,19 @@ export default function AdminUsersPage() {
                         <TableCell>{user.phone}</TableCell>
                         <TableCell>{user.role?.name || "-"}</TableCell>
                         <TableCell>{user.is_staff ? "Yes" : "No"}</TableCell>
+                        <TableCell>
+                          <Switch
+                            checked={user.is_active}
+                            onCheckedChange={async (checked) => {
+                              try {
+                                await updateUser(user.id, { is_active: checked })
+                                refetch()
+                              } catch (e) {
+                                alert("Failed to update status")
+                              }
+                            }}
+                          />
+                        </TableCell>
                         <TableCell>
                           <Button variant="outline" size="sm" asChild>
                             <Link href={`/admin/users/${user.id}/edit`}>Edit</Link>

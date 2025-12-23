@@ -14,6 +14,10 @@ type Order = {
   estimated_completion_date: string | null
   completed_at: string | null
   created_at: string
+  problem?: {
+    id: number
+    name: string
+  }
 }
 
 type OrderListResponse = {
