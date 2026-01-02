@@ -4,16 +4,29 @@ import { SiteHeader } from "@/components/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { useOrders } from "@/hooks/useOrders"
 import { useOrderMutations } from "@/hooks/useOrderMutations"
 import { useState } from "react"
 import { Badge } from "@/components/ui/badge"
-import { TableList } from "@/components/tables/table-list"
+import { TableList, type ColumnDef } from "@/components/tables/table-list"
 import { Edit, Eye, Trash2, Plus, ClipboardList } from "lucide-react"
 import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog"
 import { Breadcrumb } from "@/components/breadcrumb"
 
+interface Order {
+  id: number
+  device_id: number
+  problem: { name: string } | null
+  status: string
+  cost: number
+  discount: number
+  total_cost: number
+  created_at: string
+}
+
 export default function ReceptionistOrdersPage() {
+  const router = useRouter()
   const [page, setPage] = useState(1)
   const limit = 12
   const offset = (page - 1) * limit
@@ -23,28 +36,29 @@ export default function ReceptionistOrdersPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [deleteOrderId, setDeleteOrderId] = useState<number | null>(null)
 
-  const columns = [
+  const columns: ColumnDef<Order>[] = [
     {
       key: "id",
-      label: "Order ID",
-      render: (id: number) => <span className="font-semibold text-sm">#{id}</span>,
-      searchable: true,
+      header: "Order ID",
+      render: (order) => <span className="font-semibold text-sm">#{order.id}</span>,
+      sortable: true,
     },
     {
       key: "device_id",
-      label: "Device ID",
-      render: (id: number) => <span className="font-mono text-sm">#{id}</span>,
+      header: "Device ID",
+      render: (order) => <span className="font-mono text-sm">#{order.device_id}</span>,
+      sortable: true,
     },
     {
       key: "problem",
-      label: "Problem",
-      render: (problem: any) => <span className="text-sm">{problem?.name || "N/A"}</span>,
-      searchable: true,
+      header: "Problem",
+      render: (order) => <span className="text-sm">{order.problem?.name || "N/A"}</span>,
+      sortable: false,
     },
     {
       key: "status",
-      label: "Status",
-      render: (status: string) => {
+      header: "Status",
+      render: (order) => {
         const variants: Record<string, string> = {
           "Pending": "secondary",
           "In Progress": "default",
@@ -52,38 +66,43 @@ export default function ReceptionistOrdersPage() {
           "Cancelled": "destructive",
         }
         return (
-          <Badge variant={variants[status] || "outline"}>
-            {status}
+          <Badge variant={variants[order.status] || "outline"}>
+            {order.status}
           </Badge>
         )
       },
+      sortable: true,
     },
     {
       key: "cost",
-      label: "Cost",
-      render: (cost: number) => <span className="font-mono text-sm">रु {cost}</span>,
+      header: "Cost",
+      render: (order) => <span className="font-mono text-sm">रु {order.cost}</span>,
+      sortable: true,
     },
     {
       key: "discount",
-      label: "Discount",
-      render: (discount: number) => <span className="font-mono text-sm text-green-600">-रु {discount || 0}</span>,
+      header: "Discount",
+      render: (order) => <span className="font-mono text-sm text-green-600">-रु {order.discount || 0}</span>,
+      sortable: true,
     },
     {
       key: "total_cost",
-      label: "Total",
-      render: (total: number) => <span className="font-mono font-semibold text-sm">रु {total}</span>,
+      header: "Total",
+      render: (order) => <span className="font-mono font-semibold text-sm">रु {order.total_cost}</span>,
+      sortable: true,
     },
     {
       key: "created_at",
-      label: "Created",
-      render: (date: string) => (
-        <span className="text-sm text-muted-foreground">{new Date(date).toLocaleDateString()}</span>
+      header: "Created",
+      render: (order) => (
+        <span className="text-sm text-muted-foreground">{new Date(order.created_at).toLocaleDateString()}</span>
       ),
+      sortable: true,
     },
   ]
 
-  const handleDeleteOrder = async (id: number) => {
-    setDeleteOrderId(id)
+  const handleDeleteOrder = async (order: Order) => {
+    setDeleteOrderId(order.id)
     setDeleteDialogOpen(true)
   }
 
@@ -130,37 +149,17 @@ export default function ReceptionistOrdersPage() {
             </Button>
           </div>
 
-          <TableList
+          <TableList<Order>
             title="All Orders"
             description="Browse and manage all customer service orders with status, cost, and details"
             data={data}
             columns={columns}
-            isLoading={loading}
-            error={error}
-            totalCount={total}
-            currentPage={page}
-            pageSize={limit}
-            onPageChange={setPage}
-            actions={[
-              {
-                label: "View",
-                icon: <Eye className="h-4 w-4" />,
-                href: (id) => `/receptionist/orders/${id}`,
-              },
-              {
-                label: "Edit",
-                icon: <Edit className="h-4 w-4" />,
-                href: (id) => `/receptionist/orders/${id}/edit`,
-              },
-              {
-                label: "Delete",
-                icon: <Trash2 className="h-4 w-4" />,
-                onClick: handleDeleteOrder,
-                className: "text-red-600",
-              },
-            ]}
+            loading={loading}
             emptyMessage="No orders found in the system"
-            showSearch={true}
+            searchableFields={["id", "device_id", "status"]}
+            onView={(order) => router.push(`/receptionist/orders/${order.id}`)}
+            onEdit={(order) => router.push(`/receptionist/orders/${order.id}/edit`)}
+            onDelete={handleDeleteOrder}
           />
         </div>
       </SidebarInset>

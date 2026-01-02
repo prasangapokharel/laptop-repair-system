@@ -3,60 +3,73 @@
 import { ReceptionistSidebar } from "@/components/sidebar/receptionist"
 import { SiteHeader } from "@/components/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
-import { TableList } from "@/components/tables/table-list"
+import { TableList, type ColumnDef } from "@/components/tables/table-list"
 import { useDeviceList } from "@/hooks/useDeviceList"
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
 import { Eye, Smartphone } from "lucide-react"
 import { Breadcrumb } from "@/components/breadcrumb"
 
+interface Device {
+  id: number
+  serial_number: string | null
+  device_type: { name: string } | null
+  brand: { name: string } | null
+  model: { name: string } | null
+  color: string | null
+}
+
 export default function ReceptionistDevicesPage() {
+  const router = useRouter()
   const [page, setPage] = useState(1)
   const limit = 12
   const offset = (page - 1) * limit
 
   const { data: devices, total, loading, error } = useDeviceList(limit, offset)
 
-  const columns = [
+  const columns: ColumnDef<Device>[] = [
     {
       key: "id",
-      label: "Device ID",
-      render: (id: number) => <span className="font-semibold text-sm">#{id}</span>,
-      searchable: true,
+      header: "Device ID",
+      render: (device) => <span className="font-semibold text-sm">#{device.id}</span>,
+      sortable: true,
     },
     {
       key: "serial_number",
-      label: "Serial Number",
-      render: (serial: string | null) => (
-        <span className="font-mono text-sm bg-muted px-2 py-1 rounded">{serial || "N/A"}</span>
+      header: "Serial Number",
+      render: (device) => (
+        <span className="font-mono text-sm bg-muted px-2 py-1 rounded">{device.serial_number || "N/A"}</span>
       ),
-      searchable: true,
+      sortable: true,
     },
     {
       key: "device_type",
-      label: "Type",
-      render: (type: any) => (
-        <Badge variant="outline" className="flex w-fit">{type?.name || "Unknown"}</Badge>
+      header: "Type",
+      render: (device) => (
+        <Badge variant="outline" className="flex w-fit">{device.device_type?.name || "Unknown"}</Badge>
       ),
+      sortable: false,
     },
     {
       key: "brand",
-      label: "Brand",
-      render: (brand: any) => <span className="font-semibold text-sm">{brand?.name || "N/A"}</span>,
-      searchable: true,
+      header: "Brand",
+      render: (device) => <span className="font-semibold text-sm">{device.brand?.name || "N/A"}</span>,
+      sortable: true,
     },
     {
       key: "model",
-      label: "Model",
-      render: (model: any) => <span className="text-sm">{model?.name || "N/A"}</span>,
-      searchable: true,
+      header: "Model",
+      render: (device) => <span className="text-sm">{device.model?.name || "N/A"}</span>,
+      sortable: true,
     },
     {
       key: "color",
-      label: "Color",
-      render: (color: string | null) => (
-        <span className="text-sm">{color || "N/A"}</span>
+      header: "Color",
+      render: (device) => (
+        <span className="text-sm">{device.color || "N/A"}</span>
       ),
+      sortable: false,
     },
   ]
 
@@ -85,26 +98,15 @@ export default function ReceptionistDevicesPage() {
             </div>
           </div>
 
-          <TableList
+          <TableList<Device>
             title="All Devices"
             description="Browse through all registered devices with their types, brands, models, and specifications"
             data={devices}
             columns={columns}
-            isLoading={loading}
-            error={error}
-            totalCount={total}
-            currentPage={page}
-            pageSize={limit}
-            onPageChange={setPage}
-            actions={[
-              {
-                label: "View Details",
-                icon: <Eye className="h-4 w-4" />,
-                href: (id) => `/receptionist/devices/${id}`,
-              },
-            ]}
+            loading={loading}
             emptyMessage="No devices found in the system"
-            showSearch={true}
+            searchableFields={["serial_number"]}
+            onView={(device) => router.push(`/receptionist/devices/${device.id}`)}
           />
         </div>
       </SidebarInset>

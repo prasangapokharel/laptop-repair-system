@@ -1,344 +1,333 @@
 "use client"
 
+import type React from "react"
+import { useState, useMemo } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import Link from "next/link"
-import { Search, MoreHorizontal, Loader2 } from "lucide-react"
-import { useState, useMemo } from "react"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Search, ChevronUp, ChevronDown, Edit, Trash2, Eye, ChevronLeft, ChevronRight } from "lucide-react"
+import { cn } from "@/lib/utils"
 
-interface TableColumn {
-  key: string
-  label: string
-  render?: (value: any, row: any) => React.ReactNode
+// Type definitions
+interface ColumnDef<T> {
+  key: keyof T | string
+  header: string
+  render?: (item: T) => React.ReactNode
+  className?: string
   sortable?: boolean
   width?: string
-  searchable?: boolean
 }
 
-interface TableListProps {
-  title: string
+interface ActionConfig<T> {
+  label: string
+  icon?: React.ReactNode
+  onClick: (item: T) => void
+  variant?: "default" | "outline" | "destructive" | "secondary" | "ghost"
+  size?: "default" | "sm" | "lg" | "icon" | "icon-sm"
+}
+
+interface TableListProps<T extends Record<string, any>> {
+  data: T[]
+  columns: ColumnDef<T>[]
+  title?: string
   description?: string
-  data: any[]
-  columns: TableColumn[]
-  isLoading?: boolean
-  error?: string
-  totalCount?: number
-  currentPage?: number
-  pageSize?: number
-  onPageChange?: (page: number) => void
-  actions?: {
-    label: string
-    icon?: React.ReactNode
-    href?: (id: number) => string
-    onClick?: (id: number) => void
-    variant?: "default" | "outline" | "secondary" | "destructive" | "ghost"
-    className?: string
-  }[]
+  onEdit?: (item: T) => void
+  onDelete?: (item: T) => void
+  onView?: (item: T) => void
+  itemsPerPage?: number
+  searchableFields?: (keyof T)[]
+  rowIdKey?: keyof T
+  loading?: boolean
   emptyMessage?: string
-  showSearch?: boolean
 }
 
-export function TableList({
+interface SortConfig<T> {
+  key: keyof T | null
+  direction: "asc" | "desc"
+}
+
+export const TableList = <T extends Record<string, any>>({
+  data,
+  columns,
   title,
   description,
-  data = [],
-  columns,
-  isLoading = false,
-  error,
-  totalCount = 0,
-  currentPage = 1,
-  pageSize = 12,
-  onPageChange,
-  actions = [],
-  emptyMessage = "No data found",
-  showSearch = true,
-}: TableListProps) {
-  const [searchQuery, setSearchQuery] = useState("")
-  const totalPages = Math.ceil(totalCount / pageSize)
+  onEdit,
+  onDelete,
+  onView,
+  itemsPerPage = 10,
+  searchableFields = [],
+  rowIdKey = "id" as keyof T,
+  loading = false,
+  emptyMessage = "No data available",
+}: TableListProps<T>) => {
+  const [sortConfig, setSortConfig] = useState<SortConfig<T>>({
+    key: null,
+    direction: "asc",
+  })
+  const [searchTerm, setSearchTerm] = useState("")
+  const [currentPage, setCurrentPage] = useState(1)
+  const [selectedRows, setSelectedRows] = useState<Set<any>>(new Set())
 
-  // Filter data based on search query
   const filteredData = useMemo(() => {
-    if (!data || data.length === 0) return []
-    if (!searchQuery.trim()) return data
-    
-    const query = searchQuery.toLowerCase()
-    return data.filter((row) =>
-      columns.some((col) => {
-        if (col.searchable === false) return false
-        const value = row[col.key]
-        return value && String(value).toLowerCase().includes(query)
-      })
+    if (!searchTerm || searchableFields.length === 0) return data
+    return data.filter((item) =>
+      searchableFields.some((field) => String(item[field]).toLowerCase().includes(searchTerm.toLowerCase())),
     )
-  }, [data, searchQuery, columns])
+  }, [data, searchTerm, searchableFields])
+
+  const sortedData = useMemo(() => {
+    if (!sortConfig.key) return filteredData
+    const sorted = [...filteredData].sort((a, b) => {
+      const aVal = a[sortConfig.key!]
+      const bVal = b[sortConfig.key!]
+
+      if (aVal < bVal) return sortConfig.direction === "asc" ? -1 : 1
+      if (aVal > bVal) return sortConfig.direction === "asc" ? 1 : -1
+      return 0
+    })
+    return sorted
+  }, [filteredData, sortConfig])
+
+  const totalPages = Math.ceil(sortedData.length / itemsPerPage)
+  const paginatedData = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage
+    return sortedData.slice(start, start + itemsPerPage)
+  }, [sortedData, currentPage, itemsPerPage])
+
+  const handleSort = (key: keyof T | string) => {
+    setSortConfig((prev) => ({
+      key: key as keyof T,
+      direction: prev.key === key && prev.direction === "asc" ? "desc" : "asc",
+    }))
+    setCurrentPage(1)
+  }
+
+  const handleRowSelect = (rowId: any) => {
+    setSelectedRows((prev) => {
+      const newSet = new Set(prev)
+      if (newSet.has(rowId)) {
+        newSet.delete(rowId)
+      } else {
+        newSet.add(rowId)
+      }
+      return newSet
+    })
+  }
+
+  const handleSelectAll = () => {
+    if (selectedRows.size === paginatedData.length && paginatedData.length > 0) {
+      setSelectedRows(new Set())
+    } else {
+      const newSet = new Set(paginatedData.map((item) => item[rowIdKey]))
+      setSelectedRows(newSet)
+    }
+  }
+
+  const getSortIcon = (columnKey: keyof T | string) => {
+    if (sortConfig.key !== columnKey) return null
+    return sortConfig.direction === "asc" ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />
+  }
+
+  const actionButtons: ActionConfig<T>[] = []
+  if (onView) {
+    actionButtons.push({
+      label: "View",
+      icon: <Eye className="w-4 h-4" />,
+      onClick: onView,
+      variant: "ghost",
+      size: "icon-sm",
+    })
+  }
+  if (onEdit) {
+    actionButtons.push({
+      label: "Edit",
+      icon: <Edit className="w-4 h-4" />,
+      onClick: onEdit,
+      variant: "ghost",
+      size: "icon-sm",
+    })
+  }
+  if (onDelete) {
+    actionButtons.push({
+      label: "Delete",
+      icon: <Trash2 className="w-4 h-4" />,
+      onClick: onDelete,
+      variant: "ghost",
+      size: "icon-sm",
+    })
+  }
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col gap-2">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">{title}</h2>
-          {description && (
-            <p className="text-muted-foreground">{description}</p>
-          )}
+    <div className="w-full space-y-4">
+      {(title || description) && (
+        <div className="space-y-1">
+          {title && <h2 className="text-lg font-semibold text-foreground">{title}</h2>}
+          {description && <p className="text-sm text-muted-foreground">{description}</p>}
+        </div>
+      )}
+
+      {searchableFields.length > 0 && (
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+          <Input
+            placeholder={`Search by ${searchableFields.join(", ")}...`}
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value)
+              setCurrentPage(1)
+            }}
+            className="pl-10 max-w-md"
+          />
+        </div>
+      )}
+
+      <div className="rounded-lg border overflow-hidden bg-card">
+        <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
+          <Table>
+            <TableHeader className="sticky top-0 bg-muted/50 z-20">
+              <TableRow>
+                <TableHead className="w-12 px-4">
+                  <Checkbox
+                    checked={paginatedData.length > 0 && selectedRows.size === paginatedData.length}
+                    indeterminate={selectedRows.size > 0 && selectedRows.size < paginatedData.length ? true : undefined}
+                    onChange={handleSelectAll}
+                    aria-label="Select all rows"
+                  />
+                </TableHead>
+
+                {columns.map((column) => (
+                  <TableHead
+                    key={String(column.key)}
+                    className={cn(
+                      column.className,
+                      column.sortable !== false && "cursor-pointer hover:bg-muted/70 transition-colors",
+                    )}
+                    style={{ width: column.width }}
+                    onClick={() => {
+                      if (column.sortable !== false) {
+                        handleSort(column.key)
+                      }
+                    }}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold">{column.header}</span>
+                      {column.sortable !== false && getSortIcon(column.key)}
+                    </div>
+                  </TableHead>
+                ))}
+
+                {actionButtons.length > 0 && (
+                  <TableHead className="w-40 px-4 text-center">
+                    <span className="font-semibold">Actions</span>
+                  </TableHead>
+                )}
+              </TableRow>
+            </TableHeader>
+
+            <TableBody>
+              {loading ? (
+                [...Array(3)].map((_, idx) => (
+                  <TableRow key={idx}>
+                    <TableCell colSpan={columns.length + (actionButtons.length > 0 ? 2 : 1)}>
+                      <div className="h-8 bg-muted/30 rounded animate-pulse" />
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : paginatedData.length > 0 ? (
+                paginatedData.map((item, rowIndex) => (
+                  <TableRow key={rowIndex} className="hover:bg-muted/50">
+                    <TableCell className="w-12 px-4">
+                      <Checkbox
+                        checked={selectedRows.has(item[rowIdKey])}
+                        onChange={() => handleRowSelect(item[rowIdKey])}
+                        onClick={(e) => e.stopPropagation()}
+                        aria-label={`Select row ${rowIndex + 1}`}
+                      />
+                    </TableCell>
+
+                    {columns.map((column) => (
+                      <TableCell key={String(column.key)} className={column.className}>
+                        {column.render ? column.render(item) : String(item[column.key as keyof T] || "—")}
+                      </TableCell>
+                    ))}
+
+                    {actionButtons.length > 0 && (
+                      <TableCell className="px-4">
+                        <div className="flex gap-2 justify-center">
+                          {actionButtons.map((action, idx) => (
+                            <Button
+                              key={idx}
+                              size={action.size || "icon-sm"}
+                              variant={action.variant || "ghost"}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                action.onClick(item)
+                              }}
+                              title={action.label}
+                              className="[&_svg]:size-4"
+                            >
+                              {action.icon || action.label}
+                            </Button>
+                          ))}
+                        </div>
+                      </TableCell>
+                    )}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={columns.length + (actionButtons.length > 0 ? 2 : 1)} className="h-24 text-center">
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <p className="text-muted-foreground text-sm">{emptyMessage}</p>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </div>
       </div>
 
-      <Card className="border-0 shadow-sm">
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex-1">
-              <CardTitle className="text-lg">
-                {title} <span className="text-muted-foreground">({totalCount})</span>
-              </CardTitle>
-            </div>
-            {showSearch && (
-              <div className="relative w-full max-w-xs">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  placeholder="Search..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 h-9 text-sm bg-background"
-                />
-              </div>
-            )}
+      {sortedData.length > 0 && (
+        <div className="flex items-center justify-between pt-4 border-t">
+          <div className="text-sm text-muted-foreground">
+            Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, sortedData.length)}{" "}
+            of {sortedData.length} results
+            {selectedRows.size > 0 && <span className="ml-4 font-semibold">{selectedRows.size} row(s) selected</span>}
           </div>
-        </CardHeader>
 
-        <CardContent className="space-y-4">
-          {isLoading ? (
-            <div className="flex flex-col items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mb-2" />
-              <p className="text-muted-foreground text-sm">Loading data...</p>
-            </div>
-          ) : error ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="text-center">
-                <p className="text-red-500 font-medium mb-2">Error loading data</p>
-                <p className="text-sm text-muted-foreground">{error}</p>
-              </div>
-            </div>
-          ) : !filteredData || filteredData.length === 0 ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="text-center">
-                <p className="text-muted-foreground font-medium mb-1">{emptyMessage}</p>
-                {searchQuery && (
-                  <p className="text-sm text-muted-foreground">
-                    Try adjusting your search criteria
-                  </p>
-                )}
-              </div>
-            </div>
-          ) : (
-            <>
-              <div className="overflow-x-auto rounded-lg border border-border/50">
-                <Table>
-                  <TableHeader className="bg-muted/30 hover:bg-muted/30">
-                    <TableRow className="border-border/50 hover:bg-transparent">
-                      {columns.map((column) => (
-                        <TableHead
-                          key={column.key}
-                          className={`font-semibold text-xs uppercase tracking-wider text-muted-foreground ${column.width || ""}`}
-                        >
-                          {column.label}
-                        </TableHead>
-                      ))}
-                      {actions.length > 0 && (
-                        <TableHead className="text-right font-semibold text-xs uppercase tracking-wider text-muted-foreground">
-                          Actions
-                        </TableHead>
-                      )}
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredData.map((row, idx) => (
-                      <TableRow
-                        key={row.id || idx}
-                        className="border-border/50 hover:bg-muted/40 transition-colors"
-                      >
-                        {columns.map((column) => (
-                          <TableCell
-                            key={`${row.id}-${column.key}`}
-                            className="py-3 text-sm"
-                          >
-                            {column.render
-                              ? column.render(row[column.key], row)
-                              : row[column.key] || "-"}
-                          </TableCell>
-                        ))}
-                        {actions.length > 0 && (
-                          <TableCell className="text-right">
-                            {actions.length === 1 ? (
-                              actions[0].href ? (
-                                <Link href={actions[0].href(row.id)}>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-8 w-8 p-0"
-                                  >
-                                    {actions[0].icon || actions[0].label}
-                                  </Button>
-                                </Link>
-                              ) : (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-8 w-8 p-0"
-                                  onClick={() => actions[0].onClick?.(row.id)}
-                                >
-                                  {actions[0].icon || actions[0].label}
-                                </Button>
-                              )
-                            ) : (
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-8 w-8 p-0"
-                                  >
-                                    <MoreHorizontal className="h-4 w-4" />
-                                    <span className="sr-only">Open menu</span>
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  {actions.map((action, actionIdx) => (
-                                    action.href ? (
-                                      <Link
-                                        key={actionIdx}
-                                        href={action.href(row.id)}
-                                      >
-                                        <DropdownMenuItem
-                                          className={action.className}
-                                        >
-                                          {action.icon && (
-                                            <span className="mr-2">{action.icon}</span>
-                                          )}
-                                          {action.label}
-                                        </DropdownMenuItem>
-                                      </Link>
-                                    ) : (
-                                      <DropdownMenuItem
-                                        key={actionIdx}
-                                        onClick={() => action.onClick?.(row.id)}
-                                        className={action.className}
-                                      >
-                                        {action.icon && (
-                                          <span className="mr-2">{action.icon}</span>
-                                        )}
-                                        {action.label}
-                                      </DropdownMenuItem>
-                                    )
-                                  ))}
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            )}
-                          </TableCell>
-                        )}
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+          {totalPages > 1 && (
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft className="w-4 h-4" />
+                Previous
+              </Button>
+
+              <div className="px-3 py-1 text-sm font-medium">
+                {currentPage} / {totalPages}
               </div>
 
-              {/* Pagination */}
-              {totalPages > 1 && onPageChange && (
-                <div className="mt-6 flex items-center justify-between gap-4">
-                  <p className="text-xs text-muted-foreground">
-                    Page {currentPage} of {totalPages} • {totalCount} total items
-                  </p>
-                  <Pagination>
-                    <PaginationContent>
-                      <PaginationItem>
-                        <PaginationPrevious
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault()
-                            if (currentPage > 1) onPageChange(currentPage - 1)
-                          }}
-                          className={
-                            currentPage === 1
-                              ? "pointer-events-none opacity-50"
-                              : ""
-                          }
-                        />
-                      </PaginationItem>
-
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                        (p) => {
-                          if (
-                            p === 1 ||
-                            p === totalPages ||
-                            (p >= currentPage - 1 && p <= currentPage + 1)
-                          ) {
-                            return (
-                              <PaginationItem key={p}>
-                                <PaginationLink
-                                  href="#"
-                                  isActive={currentPage === p}
-                                  onClick={(e) => {
-                                    e.preventDefault()
-                                    onPageChange(p)
-                                  }}
-                                >
-                                  {p}
-                                </PaginationLink>
-                              </PaginationItem>
-                            )
-                          } else if (
-                            p === currentPage - 2 ||
-                            p === currentPage + 2
-                          ) {
-                            return (
-                              <PaginationItem key={p}>
-                                <PaginationEllipsis />
-                              </PaginationItem>
-                            )
-                          }
-                          return null
-                        }
-                      )}
-
-                      <PaginationItem>
-                        <PaginationNext
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault()
-                            if (currentPage < totalPages)
-                              onPageChange(currentPage + 1)
-                          }}
-                          className={
-                            currentPage === totalPages
-                              ? "pointer-events-none opacity-50"
-                              : ""
-                          }
-                        />
-                      </PaginationItem>
-                    </PaginationContent>
-                  </Pagination>
-                </div>
-              )}
-            </>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+              >
+                Next
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      )}
     </div>
   )
 }
+
+export type { ColumnDef, ActionConfig, TableListProps }

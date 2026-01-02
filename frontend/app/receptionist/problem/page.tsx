@@ -4,15 +4,25 @@ import { ReceptionistSidebar } from "@/components/sidebar/receptionist"
 import { SiteHeader } from "@/components/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
-import { TableList } from "@/components/tables/table-list"
+import { TableList, type ColumnDef } from "@/components/tables/table-list"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { useProblems, useProblemMutations } from "@/hooks/useProblems"
 import { useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Trash2, Edit, Plus, AlertCircle } from "lucide-react"
 import { Breadcrumb } from "@/components/breadcrumb"
 
+interface Problem {
+  id: number
+  name: string
+  description: string | null
+  device_type: { name: string } | null
+  created_at: string
+}
+
 export default function ReceptionistProblemsPage() {
+  const router = useRouter()
   const [page, setPage] = useState(1)
   const limit = 12
   const offset = (page - 1) * limit
@@ -20,47 +30,49 @@ export default function ReceptionistProblemsPage() {
   const { data: problems, total, loading, error } = useProblems(limit, offset)
   const { deleteProblem } = useProblemMutations()
 
-  const columns = [
+  const columns: ColumnDef<Problem>[] = [
     {
       key: "id",
-      label: "ID",
-      render: (id: number) => <span className="font-semibold text-sm">#{id}</span>,
-      searchable: true,
+      header: "ID",
+      render: (problem) => <span className="font-semibold text-sm">#{problem.id}</span>,
+      sortable: true,
     },
     {
       key: "name",
-      label: "Problem Name",
-      searchable: true,
+      header: "Problem Name",
+      sortable: true,
     },
     {
       key: "description",
-      label: "Description",
-      render: (desc: string | null) => (
-        <p className="text-sm text-muted-foreground truncate max-w-xs">{desc || "N/A"}</p>
+      header: "Description",
+      render: (problem) => (
+        <p className="text-sm text-muted-foreground truncate max-w-xs">{problem.description || "N/A"}</p>
       ),
-      searchable: true,
+      sortable: false,
     },
     {
       key: "device_type",
-      label: "Device Type",
-      render: (type: any) => (
-        <Badge variant="outline">{type?.name || "Unknown"}</Badge>
+      header: "Device Type",
+      render: (problem) => (
+        <Badge variant="outline">{problem.device_type?.name || "Unknown"}</Badge>
       ),
+      sortable: false,
     },
     {
       key: "created_at",
-      label: "Created",
-      render: (date: string) => {
-        const d = new Date(date)
+      header: "Created",
+      render: (problem) => {
+        const d = new Date(problem.created_at)
         return <span className="text-sm text-muted-foreground">{d.toLocaleDateString()}</span>
       },
+      sortable: true,
     },
   ]
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (problem: Problem) => {
     if (confirm("Are you sure you want to delete this problem? This action cannot be undone.")) {
       try {
-        await deleteProblem(id)
+        await deleteProblem(problem.id)
         window.location.reload()
       } catch (err) {
         alert("Failed to delete problem")
@@ -99,32 +111,16 @@ export default function ReceptionistProblemsPage() {
             </Button>
           </div>
 
-          <TableList
+          <TableList<Problem>
             title="All Problems"
             description="View and manage all device problems and issues that customers report"
             data={problems}
             columns={columns}
-            isLoading={loading}
-            error={error}
-            totalCount={total}
-            currentPage={page}
-            pageSize={limit}
-            onPageChange={setPage}
-            actions={[
-              {
-                label: "Edit",
-                icon: <Edit className="h-4 w-4" />,
-                href: (id) => `/receptionist/problem/${id}/edit`,
-              },
-              {
-                label: "Delete",
-                icon: <Trash2 className="h-4 w-4" />,
-                onClick: handleDelete,
-                className: "text-red-600",
-              },
-            ]}
+            loading={loading}
             emptyMessage="No problems found in the system"
-            showSearch={true}
+            searchableFields={["name", "description"]}
+            onEdit={(problem) => router.push(`/receptionist/problem/${problem.id}/edit`)}
+            onDelete={handleDelete}
           />
         </div>
       </SidebarInset>
