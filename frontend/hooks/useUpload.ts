@@ -15,7 +15,7 @@ export async function uploadProfileImage(
   file: File
 ): Promise<string> {
   try {
-    const result = await api.upload(API_ENDPOINTS.UPLOAD, file)
+    const result = await api.upload<{ file_path: string }>(API_ENDPOINTS.UPLOAD, file)
     if (!result || !result.file_path) {
       throw new Error("Upload failed: No file path returned")
     }
@@ -32,7 +32,7 @@ export async function uploadProfileImage(
  */
 export async function uploadFile(file: File): Promise<string> {
   try {
-    const result = await api.upload(API_ENDPOINTS.UPLOAD, file)
+    const result = await api.upload<{ file_path: string }>(API_ENDPOINTS.UPLOAD, file)
     if (!result || !result.file_path) {
       throw new Error("Upload failed: No file path returned")
     }

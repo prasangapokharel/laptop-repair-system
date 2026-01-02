@@ -15,7 +15,7 @@ interface Customer {
   id: number
   full_name: string
   phone: string
-  email: string
+  email: string | null
   is_active: boolean
   created_at: string
 }

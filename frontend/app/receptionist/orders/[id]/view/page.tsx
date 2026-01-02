@@ -99,7 +99,7 @@ export default function ReceptionistOrderViewPage() {
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground mb-1">Problem</p>
-                      <p className="text-sm">{data.problem?.name || "N/A"}</p>
+                      <p className="text-sm">{data.problem_id ? `#${data.problem_id}` : "N/A"}</p>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground mb-1">Note</p>

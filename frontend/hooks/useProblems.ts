@@ -116,7 +116,7 @@ export function useProblem(id: number | null) {
       setLoading(true)
       setError(null)
       try {
-        const res = await api.get<Problem>(API_ENDPOINTS.PROBLEMS.DETAIL(id))
+        const res = await api.get<Problem>(API_ENDPOINTS.PROBLEMS.DETAIL(id as number))
         if (!cancelled) {
           setData(res)
         }
@@ -187,4 +187,25 @@ export function useProblemMutations() {
     loading: createLoading || updateLoading || deleteLoading,
     error: createError || updateError || deleteError,
   }
+}
+
+/**
+ * Helper function to create a problem (for use in forms)
+ */
+export async function createProblem(payload: CreateProblemPayload): Promise<Problem> {
+  return await api.post<Problem>(API_ENDPOINTS.PROBLEMS.CREATE, payload)
+}
+
+/**
+ * Helper function to update a problem (for use in forms)
+ */
+export async function updateProblem(id: number, payload: UpdateProblemPayload): Promise<Problem> {
+  return await api.patch<Problem>(API_ENDPOINTS.PROBLEMS.UPDATE(id), payload)
+}
+
+/**
+ * Helper function to delete a problem (for use in forms)
+ */
+export async function deleteProblem(id: number): Promise<void> {
+  return await api.delete(API_ENDPOINTS.PROBLEMS.DELETE(id))
 }

@@ -190,7 +190,6 @@ export const TableList = <T extends Record<string, any>>({
                 <TableHead className="w-12 px-4">
                   <Checkbox
                     checked={paginatedData.length > 0 && selectedRows.size === paginatedData.length}
-                    indeterminate={selectedRows.size > 0 && selectedRows.size < paginatedData.length ? true : undefined}
                     onChange={handleSelectAll}
                     aria-label="Select all rows"
                   />

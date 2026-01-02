@@ -89,3 +89,24 @@ export function useUpdateDeviceBrand() {
 export function useDeleteDeviceBrand() {
   return useApiDelete(API_ENDPOINTS.DEVICES.BRANDS.LIST)
 }
+
+/**
+ * Helper function to create a device brand (for use in forms)
+ */
+export async function createDeviceBrand(payload: CreateBrandPayload): Promise<DeviceBrand> {
+  return await api.post<DeviceBrand>(API_ENDPOINTS.DEVICES.BRANDS.CREATE, payload)
+}
+
+/**
+ * Helper function to update a device brand (for use in forms)
+ */
+export async function updateDeviceBrand(id: number, payload: UpdateBrandPayload): Promise<DeviceBrand> {
+  return await api.patch<DeviceBrand>(API_ENDPOINTS.DEVICES.BRANDS.UPDATE(id), payload)
+}
+
+/**
+ * Helper function to delete a device brand (for use in forms)
+ */
+export async function deleteDeviceBrand(id: number): Promise<void> {
+  return await api.delete(API_ENDPOINTS.DEVICES.BRANDS.DELETE(id))
+}

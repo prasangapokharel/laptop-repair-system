@@ -169,7 +169,7 @@ export function useFileUpload() {
     setLoading(true)
     setError(null)
     try {
-      const result = await api.upload("/upload", file)
+      const result = await api.upload<{ file_path: string }>("/upload", file)
       setLoading(false)
       return result?.file_path || null
     } catch (err) {

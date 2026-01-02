@@ -14,10 +14,9 @@ import { Breadcrumb } from "@/components/breadcrumb"
 interface Device {
   id: number
   serial_number: string | null
-  device_type: { name: string } | null
-  brand: { name: string } | null
-  model: { name: string } | null
-  color: string | null
+  device_type?: { id: number; name: string }
+  brand?: { id: number; name: string }
+  model?: { id: number; name: string }
 }
 
 export default function ReceptionistDevicesPage() {
@@ -57,21 +56,13 @@ export default function ReceptionistDevicesPage() {
       render: (device) => <span className="font-semibold text-sm">{device.brand?.name || "N/A"}</span>,
       sortable: true,
     },
-    {
-      key: "model",
-      header: "Model",
-      render: (device) => <span className="text-sm">{device.model?.name || "N/A"}</span>,
-      sortable: true,
-    },
-    {
-      key: "color",
-      header: "Color",
-      render: (device) => (
-        <span className="text-sm">{device.color || "N/A"}</span>
-      ),
-      sortable: false,
-    },
-  ]
+     {
+       key: "model",
+       header: "Model",
+       render: (device) => <span className="text-sm">{device.model?.name || "N/A"}</span>,
+       sortable: true,
+     },
+   ]
 
   return (
     <SidebarProvider>

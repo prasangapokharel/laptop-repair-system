@@ -92,3 +92,24 @@ export function useUpdateDeviceType() {
 export function useDeleteDeviceType() {
   return useApiDelete(API_ENDPOINTS.DEVICES.DEVICE_TYPES.LIST)
 }
+
+/**
+ * Helper function to create a device type (for use in forms)
+ */
+export async function createDeviceType(payload: CreateTypePayload): Promise<DeviceType> {
+  return await api.post<DeviceType>(API_ENDPOINTS.DEVICES.DEVICE_TYPES.CREATE, payload)
+}
+
+/**
+ * Helper function to update a device type (for use in forms)
+ */
+export async function updateDeviceType(id: number, payload: UpdateTypePayload): Promise<DeviceType> {
+  return await api.patch<DeviceType>(API_ENDPOINTS.DEVICES.DEVICE_TYPES.UPDATE(id), payload)
+}
+
+/**
+ * Helper function to delete a device type (for use in forms)
+ */
+export async function deleteDeviceType(id: number): Promise<void> {
+  return await api.delete(API_ENDPOINTS.DEVICES.DEVICE_TYPES.DELETE(id))
+}

@@ -95,3 +95,24 @@ export function useUpdateDeviceModel() {
 export function useDeleteDeviceModel() {
   return useApiDelete(API_ENDPOINTS.DEVICES.MODELS.LIST)
 }
+
+/**
+ * Helper function to create a device model (for use in forms)
+ */
+export async function createDeviceModel(payload: CreateModelPayload): Promise<DeviceModel> {
+  return await api.post<DeviceModel>(API_ENDPOINTS.DEVICES.MODELS.CREATE, payload)
+}
+
+/**
+ * Helper function to update a device model (for use in forms)
+ */
+export async function updateDeviceModel(id: number, payload: UpdateModelPayload): Promise<DeviceModel> {
+  return await api.patch<DeviceModel>(API_ENDPOINTS.DEVICES.MODELS.UPDATE(id), payload)
+}
+
+/**
+ * Helper function to delete a device model (for use in forms)
+ */
+export async function deleteDeviceModel(id: number): Promise<void> {
+  return await api.delete(API_ENDPOINTS.DEVICES.MODELS.DELETE(id))
+}

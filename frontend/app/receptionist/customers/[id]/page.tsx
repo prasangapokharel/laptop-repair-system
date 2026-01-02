@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import { useParams } from "next/navigation"
 import { useUserDetail } from "@/hooks/useUserDetail"
-import { useOrders } from "@/hooks/useOrders"
+import { useOrders, type Order } from "@/hooks/useOrders"
 import { useState } from "react"
 import { TableList } from "@/components/tables/table-list"
 import { Edit, Eye, Calendar, Mail, Phone } from "lucide-react"
@@ -28,52 +28,47 @@ export default function ReceptionistCustomerDetailPage() {
   const { data: orders, total: ordersTotal, loading: ordersLoading, error: ordersError } = useOrders({
     limit,
     offset,
-    filters: { customer_id: id },
+    customer_id: id,
   })
 
   const columns = [
     {
       key: "id",
-      label: "Order ID",
-      render: (id: number) => <span className="font-semibold text-sm">#{id}</span>,
-    },
-    {
-      key: "problem",
-      label: "Problem",
-      render: (problem: any) => <span className="text-sm">{problem?.name || "N/A"}</span>,
+      header: "Order ID",
+      render: (order: Order) => <span className="font-mono text-sm">#{order.id}</span>,
     },
     {
       key: "status",
-      label: "Status",
-      render: (status: string) => {
-        const variants: Record<string, string> = {
+      header: "Status",
+      render: (order: Order) => {
+        const variants: Record<string, "default" | "destructive" | "outline" | "secondary"> = {
           Pending: "secondary",
           "In Progress": "default",
           Completed: "default",
           Cancelled: "destructive",
         }
         return (
-          <Badge variant={variants[status] || "outline"}>
-            {status}
+          <Badge variant={variants[order.status] || "outline"}>
+            {order.status}
           </Badge>
         )
       },
     },
     {
       key: "cost",
-      label: "Cost",
-      render: (cost: number) => <span className="font-mono text-sm">रु {cost}</span>,
+      header: "Cost",
+      render: (order: Order) => <span className="font-mono text-sm">रु {order.cost}</span>,
     },
     {
       key: "total_cost",
-      label: "Total",
-      render: (total: number) => <span className="font-mono font-semibold text-sm">रु {total}</span>,
+      header: "Total",
+      render: (order: Order) => <span className="font-mono font-semibold text-sm">रु {order.total_cost}</span>,
     },
     {
       key: "created_at",
-      label: "Date",
-      render: (date: string) => (
-        <span className="text-sm text-muted-foreground">{new Date(date).toLocaleDateString()}</span>
+      header: "Date",
+      render: (order: Order) => (
+        <span className="text-sm text-muted-foreground">{new Date(order.created_at).toLocaleDateString()}</span>
       ),
     },
   ]
@@ -179,32 +174,17 @@ export default function ReceptionistCustomerDetailPage() {
                 </CardHeader>
                 <Separator />
                 <CardContent className="pt-6">
-                  <TableList
-                    title="Customer Orders"
-                    description={`All service orders for ${customer.full_name}`}
-                    data={orders}
-                    columns={columns}
-                    isLoading={ordersLoading}
-                    error={ordersError}
-                    totalCount={ordersTotal}
-                    currentPage={page}
-                    pageSize={limit}
-                    onPageChange={setPage}
-                    actions={[
-                      {
-                        label: "View",
-                        icon: <Eye className="h-4 w-4" />,
-                        href: (id) => `/receptionist/orders/${id}`,
-                      },
-                      {
-                        label: "Edit",
-                        icon: <Edit className="h-4 w-4" />,
-                        href: (id) => `/receptionist/orders/${id}/edit`,
-                      },
-                    ]}
-                    emptyMessage="No orders found for this customer"
-                    showSearch={false}
-                  />
+                  {ordersLoading && <p className="text-muted-foreground">Loading orders...</p>}
+                  {ordersError && <p className="text-red-500">Error: {ordersError}</p>}
+                  {!ordersLoading && !ordersError && (
+                    <TableList
+                      data={orders}
+                      columns={columns}
+                      loading={ordersLoading}
+                      emptyMessage="No orders found for this customer"
+                      searchableFields={["status"]}
+                    />
+                  )}
                 </CardContent>
               </Card>
             </>

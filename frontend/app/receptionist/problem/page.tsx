@@ -17,7 +17,7 @@ interface Problem {
   id: number
   name: string
   description: string | null
-  device_type: { name: string } | null
+  device_type?: { id: number; name: string }
   created_at: string
 }
 

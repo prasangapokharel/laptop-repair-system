@@ -17,11 +17,11 @@ import { Breadcrumb } from "@/components/breadcrumb"
 interface Order {
   id: number
   device_id: number
-  problem: { name: string } | null
+  problem?: { id: number; name: string }
   status: string
-  cost: number
-  discount: number
-  total_cost: number
+  cost: string
+  discount: string
+  total_cost: string
   created_at: string
 }
 
@@ -59,7 +59,7 @@ export default function ReceptionistOrdersPage() {
       key: "status",
       header: "Status",
       render: (order) => {
-        const variants: Record<string, string> = {
+        const variants: Record<string, "default" | "destructive" | "outline" | "secondary"> = {
           "Pending": "secondary",
           "In Progress": "default",
           "Completed": "default",
