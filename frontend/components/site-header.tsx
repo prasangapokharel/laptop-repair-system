@@ -33,7 +33,7 @@ export function SiteHeader({ title }: { title?: string }) {
 
   const handleLogout = async () => {
     await logout()
-    window.location.href = "/login"
+    window.location.href = "/auth/login"
   }
 
   const computedTitle = useMemo(() => {

@@ -55,14 +55,14 @@ export default function CustomerProfilePage() {
     if (!id) return
     let imagePath = profilePath
     if (file && !imagePath) {
-      imagePath = await uploadProfileImage(file)
+      imagePath = await uploadProfileImage(fullNameVal, file)
       setProfilePath(imagePath)
     }
     await updateUser(id, {
       full_name: fullNameVal,
       phone: phoneVal,
       email: emailVal,
-      profile_picture: imagePath ?? profilePicVal || null,
+      profile_picture: imagePath ?? profilePicVal ?? null,
     })
   }
 
@@ -120,7 +120,7 @@ export default function CustomerProfilePage() {
                           variant="outline"
                           onClick={async () => {
                             if (file) {
-                              const p = await uploadProfileImage(file)
+                              const p = await uploadProfileImage(fullNameVal, file)
                               setProfilePath(p)
                             }
                           }}

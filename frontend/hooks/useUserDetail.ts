@@ -1,7 +1,17 @@
+/**
+ * User Detail Hook
+ * Fetches a single user by ID
+ */
+
+"use client"
 import { useEffect, useState } from "react"
-import { apiJson } from "@/lib/api"
+import { api } from "@/lib/api-client"
+import { API_ENDPOINTS } from "@/config/api.config"
 import type { User } from "./useUsers"
 
+/**
+ * Fetch single user by ID
+ */
 export function useUserDetail(id: number) {
   const [data, setData] = useState<User | null>(null)
   const [loading, setLoading] = useState(false)
@@ -9,22 +19,32 @@ export function useUserDetail(id: number) {
 
   useEffect(() => {
     if (!id) return
+
     let cancelled = false
-    async function run() {
+
+    async function fetchUser() {
       setLoading(true)
       setError(null)
       try {
-        const user = await apiJson<User>(`/users/${id}`)
-        if (!cancelled) setData(user)
-      } catch (e) {
+        const user = await api.get<User>(API_ENDPOINTS.USERS.DETAIL(id))
+        if (!cancelled) {
+          setData(user)
+        }
+      } catch (err) {
         const message =
-          e instanceof Error ? e.message : "Failed to load user"
-        if (!cancelled) setError(message)
+          err instanceof Error ? err.message : "Failed to load user"
+        if (!cancelled) {
+          setError(message)
+        }
       } finally {
-        if (!cancelled) setLoading(false)
+        if (!cancelled) {
+          setLoading(false)
+        }
       }
     }
-    run()
+
+    fetchUser()
+
     return () => {
       cancelled = true
     }

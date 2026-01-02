@@ -1,0 +1,2 @@
+
+Nice now create a highy perfelt landing page update this frontend\app\page.tsx with see the templates format ensure see this gett it and a highyl advance handling page npx shadcn@latest add @ss-blocks/hero-section-01 ensure us ethis get it ? for ladnign page hero section ensure 

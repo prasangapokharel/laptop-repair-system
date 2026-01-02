@@ -8,6 +8,11 @@ class DeviceTypeCreate(BaseModel):
     description: Optional[str] = None
 
 
+class DeviceTypeUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+
+
 class DeviceTypeResponse(BaseModel):
     id: int
     name: str
@@ -20,6 +25,10 @@ class DeviceTypeResponse(BaseModel):
 
 class BrandCreate(BaseModel):
     name: str
+
+
+class BrandUpdate(BaseModel):
+    name: Optional[str] = None
 
 
 class BrandResponse(BaseModel):
@@ -35,6 +44,12 @@ class ModelCreate(BaseModel):
     brand_id: int
     name: str
     device_type_id: int
+
+
+class ModelUpdate(BaseModel):
+    brand_id: Optional[int] = None
+    name: Optional[str] = None
+    device_type_id: Optional[int] = None
 
 
 class ModelResponse(BaseModel):
@@ -79,4 +94,3 @@ class DeviceResponse(BaseModel):
 
     class Config:
         from_attributes = True
-

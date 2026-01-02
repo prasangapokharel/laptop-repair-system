@@ -9,6 +9,9 @@ from fastapi.exception_handlers import (
 from sqlalchemy.exc import SQLAlchemyError
 from core.config import settings
 from apps.api.v1 import api_router
+import logging
+
+logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="Laptop Repair Store Management API",
@@ -29,9 +32,21 @@ app.include_router(api_router)
 
 @app.exception_handler(SQLAlchemyError)
 async def sqlalchemy_exception_handler(request: Request, exc: SQLAlchemyError):
+    import traceback
+    error_trace = ''.join(traceback.format_exception(type(exc), exc, exc.__traceback__))
+    logger.error(f"SQLAlchemy Error: {type(exc).__name__}: {str(exc)}\n{error_trace}", exc_info=True)
     return ORJSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content={"detail": "Database error occurred"}
+        content={"detail": f"Database error: {str(exc)[:200]}"}
+    )
+
+
+@app.exception_handler(Exception)
+async def general_exception_handler(request: Request, exc: Exception):
+    logger.error(f"Unexpected Error: {type(exc).__name__}: {str(exc)}", exc_info=True)
+    return ORJSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={"detail": str(exc)}
     )
 
 
@@ -48,4 +63,3 @@ async def root():
 @app.get("/health")
 async def health():
     return {"status": "healthy"}
-

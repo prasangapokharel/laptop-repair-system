@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, field_validator
+from pydantic import BaseModel, EmailStr, field_validator, Field
 from typing import Optional, List, Any
 from datetime import datetime
 
@@ -38,7 +38,7 @@ class UserResponse(BaseModel):
     is_active: bool
     is_staff: bool
     created_at: datetime
-    role: Optional[RoleResponse] = None
+    role: Optional[RoleResponse] = Field(default=None, validation_alias="roles")
 
     @field_validator('role', mode='before')
     @classmethod
@@ -59,8 +59,20 @@ class UserResponse(BaseModel):
         from_attributes = True
 
 
+class UserListResponse(BaseModel):
+    items: List[UserResponse]
+    total: int
+    page: int
+    limit: int
+
+
 class RoleCreate(BaseModel):
     name: str
+    description: Optional[str] = None
+
+
+class RoleUpdate(BaseModel):
+    name: Optional[str] = None
     description: Optional[str] = None
 
 
@@ -77,4 +89,3 @@ class RoleEnrollResponse(BaseModel):
 
     class Config:
         from_attributes = True
-

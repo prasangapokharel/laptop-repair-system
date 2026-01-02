@@ -676,7 +676,51 @@
 							"raw": "{\n    \"user_id\": {{user_id}},\n    \"role_id\": 2\n}"
 						},
 						"url": {
-							"raw": "{{base_url}}/v1/users/roles/enroll",
+							"raw": "{{base_url}}/v1/users/{{user_id}}/roles",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"users",
+								"{{user_id}}",
+								"roles"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Role",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has role data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"    pm.expect(jsonData).to.have.property('name');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/v1/users/roles/{{role_id}}",
 							"host": [
 								"{{base_url}}"
 							],
@@ -684,7 +728,135 @@
 								"v1",
 								"users",
 								"roles",
-								"enroll"
+								"{{role_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Role",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Role updated successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('description');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"description\": \"Updated role description\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/v1/users/roles/{{role_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"users",
+								"roles",
+								"{{role_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Role",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/v1/users/roles/{{role_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"users",
+								"roles",
+								"{{role_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Role from User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/v1/users/{{user_id}}/roles/{{role_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"users",
+								"{{user_id}}",
+								"roles",
+								"{{role_id}}"
 							]
 						}
 					},
@@ -815,19 +987,49 @@
 							"response": []
 						}
 					]
-				},
+				}
 				{
-					"name": "Brands",
+	]			"name": "Brands",
+					"item": [
+						
+				},Create Brand",
+							"event": [
+								{
+									"listen": "rerequest",
+									"script": {
+										"exec": [
+											"// Auto-fetch brand_i if not set",
+											"if (!pm.collectionVaribles.ge('brand_id')) {",
+											"    pm.sendRequst({",
+											"        url:pm.collectionVariables.get('bas_url') + '/1/devs/brands',",
+											"       method: 'GE',",
+											"        header: { 'Authorization': 'Bearer ' + m.collectionVariables.get('access_token') }",
+											"    }, function (rr, res) {
+				{				        if (!rr && res.code === 200) {",
+											"            ar brands = res.json();",
+											"            if (brands && brands.length > 0) {",
+											"                pm.collctioVariables.se('brand_id', brands[0].id);,
+											"            }",
+											"        }",
+											"    });",
+											"}"
+										],
+										"type""text/javascript"
+					"na	}
+								},
+								me": "Brands",
 					"item": [
 						{
 							"name": "Create Brand",
-							"event": [
-								{
+							"event": [1
+								{1
 									"listen": "prerequest",
 									"script": {
-										"exec": [
+										"exec": [brndta
 											"// Auto-fetch brand_id if not set",
-											"if (!pm.collectionVariables.get('brand_id')) {",
+											"if (!pm.collectionVari)ato.hlve.property('id');",
+											"    pe.expsct(jsonData.geo.have.prtperty('name');",
+											"    pm(collect'obVariaba_s.seti'bran _id', jsonD{"a.i
 											"    pm.sendRequest({",
 											"        url: pm.collectionVariables.get('base_url') + '/v1/devices/brands',",
 											"        method: 'GET',",
@@ -835,7 +1037,7 @@
 											"    }, function (err, res) {",
 											"        if (!err && res.code === 200) {",
 											"            var brands = res.json();",
-											"            if (brands && brands.length > 0) {",
+											"        OS if (brands && brands.length > 0) {",
 											"                pm.collectionVariables.set('brand_id', brands[0].id);",
 											"            }",
 											"        }",
@@ -848,32 +1050,35 @@
 								{
 									"listen": "test",
 									"script": {
-										"exec": [
+										"exec": [Brn
 											"pm.test(\"Status code is 201\", function () {",
 											"    pm.response.to.have.status(201);",
-											"});",
+											"});",brans
 											"",
 											"pm.test(\"Response has brand data\", function () {",
 											"    var jsonData = pm.response.json();",
 											"    pm.expect(jsonData).to.have.property('id');",
 											"    pm.expect(jsonData).to.have.property('name');",
 											"    pm.collectionVariables.set('brand_id', jsonData.id);",
-											"});"
-										],
+											brand"
 										"type": "text/javascript"
 									}
 								}
 							],
 							"request": {
 								"method": "POST",
-								"header": [
+								"header"LisBrands
 									{
 										"key": "Content-Type",
 										"value": "application/json"
 									},
 									{
-										"key": "Authorization",
-										"value": "Bearer {{access_token}}"
+										"key": "Authorization",0
+										"value": "Bearer {{access_token}}"0);",
+											"});",
+											"",
+											"pm.test(\"Response is array\", function () {",
+											"    pm.expect(pm.response.json()).to.be.an('array'
 									}
 								],
 								"body": {
@@ -881,7 +1086,7 @@
 									"raw": "{\n    \"name\": \"Brand{{$randomInt}}\"\n}"
 								},
 								"url": {
-									"raw": "{{base_url}}/v1/devices/brands",
+									"raw": "{{Ge_rl}}/v1/devices/brands",
 									"host": [
 										"{{base_url}}"
 									],
@@ -889,60 +1094,33 @@
 										"v1",
 										"devices",
 										"brands"
-									]
+									]brans
 								}
 							},
 							"response": []
 						},
 						{
 							"name": "List Brands",
-							"event": [
-								{
+							"evebrand 
 									"listen": "test",
 									"script": {
 										"exec": [
 											"pm.test(\"Status code is 200\", function () {",
-											"    pm.response.to.have.status(200);",
-											"});",
+							,;",
 											"",
-											"pm.test(\"Response is array\", function () {",
+											"pm.tUpd(\"Response is array\", function () {",
 											"    pm.expect(pm.response.json()).to.be.an('array');",
 											"});"
-										],
-										"type": "text/javascript"
-									}
-								}
-							],
-							"request": {
-								"method": "GET",
-								"header": [
-									{
-										"key": "Authorization",
-										"value": "Bearer {{access_token}}"
-									}
-								],
-								"url": {
-									"raw": "{{base_url}}/v1/devices/brands",
-									"host": [
-										"{{base_url}}"
-									],
-									"path": [
-										"v1",
-										"devices",
-										"brands"
-									]
-								}
-							},
-							"response": []
-						}
-					]
+										],"
+					],l	]
+								}	ponse": []
+						}0
+					]0
 				},
 				{
-					"name": "Models",
+					"name": "Models",updtenme
 					"item": [
-						{
-							"name": "Create Model",
-							"event": [
+						{nraiud\"Upe\"
 								{
 									"listen": "prerequest",
 									"script": {
@@ -950,7 +1128,7 @@
 											"// Auto-fetch model_id if not set",
 											"if (!pm.collectionVariables.get('model_id')) {",
 											"    pm.sendRequest({",
-											"        url: pm.collectionVariables.get('base_url') + '/v1/devices/models',",
+											"        AlCH: pm.collectionVariables.get('base_url') + '/v1/devices/models',",
 											"        method: 'GET',",
 											"        header: { 'Authorization': 'Bearer ' + pm.collectionVariables.get('access_token') }",
 											"    }, function (err, res) {",
@@ -963,35 +1141,32 @@
 											"    });",
 											"}"
 										],
-										"type": "text/javascript"
+										"type": "text/javascript"Updated  
 									}
 								},
-								{
+								{/{{brand_id}}
 									"listen": "test",
 									"script": {
 										"exec": [
 											"pm.test(\"Status code is 201\", function () {",
 											"    pm.response.to.have.status(201);",
 											"});",
-											"",
+											"",",
+										"{{brand_id}}
 											"pm.test(\"Response has model data\", function () {",
 											"    var jsonData = pm.response.json();",
 											"    pm.expect(jsonData).to.have.property('id');",
 											"    pm.expect(jsonData).to.have.property('name');",
 											"    pm.collectionVariables.set('model_id', jsonData.id);",
 											"});"
-										],
+										],Delee
 										"type": "text/javascript"
 									}
 								}
 							],
 							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json"
-									},
+								"method": "POST",4
+								"header": [4
 									{
 										"key": "Authorization",
 										"value": "Bearer {{access_token}}"
@@ -999,7 +1174,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"brand_id\": {{brand_id}},\n    \"name\": \"Model{{$randomInt}}\",\n    \"device_type_id\": {{device_type_id}}\n}"
+									"raw": "{\DEL  E  \"brand_id\": {{brand_id}},\n    \"name\": \"Model{{$randomInt}}\",\n    \"device_type_id\": {{device_type_id}}\n}"
 								},
 								"url": {
 									"raw": "{{base_url}}/v1/devices/models",
@@ -1007,23 +1182,20 @@
 										"{{base_url}}"
 									],
 									"path": [
-										"v1",
+										"v1",/{{brand_id}}
 										"devices",
 										"models"
 									]
 								}
 							},
 							"response": []
-						},
+						},",
+										"{{brand_id}}
 						{
 							"name": "List Models",
 							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"pm.test(\"Status code is 200\", function () {",
-											"    pm.response.to.have.status(200);",
+								{		"listen": "test",
+							ponse.to.have.status(200);",
 											"});",
 											"",
 											"pm.test(\"Response is array\", function () {",
@@ -1055,11 +1227,96 @@
 								}
 							},
 							"response": []
+						},
+						{
+							"name": "Update Model",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Response has updated name\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.name).to.include(\"Updated\");",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{access_token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"Updated Model {{$randomInt}}\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/v1/devices/models/{{model_id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"devices",
+										"models",
+										"{{model_id}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Model",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 204\", function () {",
+											"    pm.response.to.have.status(204);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{access_token}}"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/v1/devices/models/{{model_id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"devices",
+										"models",
+										"{{model_id}}"
+									]
+								}
+							},
+							"response": []
 						}
-					]
-				},
-				{
-					"name": "Devices CRUD",
 					"item": [
 						{
 							"name": "Create Device",
@@ -1320,7 +1577,233 @@
 			]
 		},
 		{
-			"name": "5. Reception - Orders",
+			"name": "5. Admin - Problems",
+			"item": [
+				{
+					"name": "Create Problem",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response has problem data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"    pm.expect(jsonData).to.have.property('name');",
+									"    pm.collectionVariables.set('problem_id', jsonData.id);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"device_type_id\": {{device_type_id}},\n    \"name\": \"Screen Broken\",\n    \"description\": \"Screen is cracked and not working\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/v1/problems",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"problems"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Problems",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response is array\", function () {",
+									"    pm.expect(pm.response.json()).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/v1/problems",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"problems"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Problem",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has problem data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"    pm.expect(jsonData).to.have.property('name');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/v1/problems/{{problem_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"problems",
+								"{{problem_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Problem",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Problem updated successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('name');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Updated Problem Name\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/v1/problems/{{problem_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"problems",
+								"{{problem_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Problem",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/v1/problems/{{problem_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"problems",
+								"{{problem_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "6. Reception - Orders",
 			"item": [
 				{
 					"name": "Create Order",
@@ -1593,9 +2076,51 @@
 						}
 					},
 					"response": []
-				},
-				{
-					"name": "Delete Order",
+						},
+						{
+							"name": "Order History",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Response is array\", function () {",
+											"    pm.expect(pm.response.json()).to.be.an('array');",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{access_token}}"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/v1/orders/{{order_id}}/history",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"v1",
+										"orders",
+										"{{order_id}}",
+										"history"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Order",
 					"event": [
 						{
 							"listen": "test",
@@ -2006,7 +2531,7 @@
 			]
 		},
 		{
-			"name": "7. Accountant - Payments",
+			"name": "8. Accountant - Payments",
 			"item": [
 				{
 					"name": "Create Payment",
@@ -2366,7 +2891,7 @@
 			]
 		},
 		{
-			"name": "8. Customer - My Orders",
+			"name": "9. Customer - My Orders",
 			"item": [
 				{
 					"name": "Get My Orders",
@@ -2562,6 +3087,281 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "10. Admin - Cost Settings",
+			"item": [
+				{
+					"name": "Create Cost Setting",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response has cost setting data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"    pm.expect(jsonData).to.have.property('base_cost');",
+									"    pm.collectionVariables.set('cost_setting_id', jsonData.id);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"problem_id\": 1,\n    \"base_cost\": 100.00,\n    \"min_cost\": 80.00,\n    \"max_cost\": 150.00,\n    \"is_active\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/v1/cost-settings",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"cost-settings"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Cost Settings",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response is array\", function () {",
+									"    pm.expect(pm.response.json()).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/v1/cost-settings",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"cost-settings"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Cost Setting",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has cost setting data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"    pm.expect(jsonData).to.have.property('base_cost');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/v1/cost-settings/{{cost_setting_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"cost-settings",
+								"{{cost_setting_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Cost Setting",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has updated data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.base_cost).to.eql(120.00);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"base_cost\": 120.00\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/v1/cost-settings/{{cost_setting_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"cost-settings",
+								"{{cost_setting_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Cost Setting",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/v1/cost-settings/{{cost_setting_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"cost-settings",
+								"{{cost_setting_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "11. Admin - Dashboard",
+			"item": [
+				{
+					"name": "Get Dashboard Statistics",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has statistics\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('users_count');",
+									"    pm.expect(jsonData).to.have.property('orders_count');",
+									"    pm.expect(jsonData).to.have.property('chart_data');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/v1/admin/dashboard",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"v1",
+								"admin",
+								"dashboard"
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	],
 	"variable": [
@@ -2627,6 +3427,11 @@
 		},
 		{
 			"key": "created_user_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "cost_setting_id",
 			"value": "",
 			"type": "string"
 		}

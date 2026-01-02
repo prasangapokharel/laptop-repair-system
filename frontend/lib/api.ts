@@ -1,7 +1,7 @@
 export const BASE_URL =
   process.env.NEXT_PUBLIC_BASE_URL ||
   process.env.BASE_URL ||
-  "http://localhost:8000/v1"
+  "http://localhost:8000/api/v1"
 
 function getAccessToken() {
   if (typeof window === "undefined") return null
@@ -29,10 +29,10 @@ function clearTokens() {
 let isRefreshing = false
 let failedQueue: Array<{
   resolve: (value: unknown) => void
-  reject: (reason?: any) => void
+  reject: (reason?: unknown) => void
 }> = []
 
-const processQueue = (error: any, token: string | null = null) => {
+const processQueue = (error: unknown, token: string | null = null) => {
   failedQueue.forEach((prom) => {
     if (error) {
       prom.reject(error)
@@ -48,9 +48,12 @@ export async function apiFetch(
   options: RequestInit = {}
 ): Promise<Response> {
   const token = getAccessToken()
+  const isForm = typeof FormData !== "undefined" && options.body instanceof FormData
   const headers: HeadersInit = {
-    "Content-Type": "application/json",
     ...(options.headers || {}),
+  }
+  if (!isForm && !(headers as Record<string, string>)["Content-Type"]) {
+    ;(headers as Record<string, string>)["Content-Type"] = "application/json"
   }
   if (token) {
     ;(headers as Record<string, string>)["Authorization"] = `Bearer ${token}`
@@ -65,8 +68,8 @@ export async function apiFetch(
     if (!refreshToken) {
       // No refresh token, or we are already on the login page/refreshing
       clearTokens()
-      if (typeof window !== "undefined" && !window.location.pathname.includes("/login")) {
-        window.location.href = "/login"
+      if (typeof window !== "undefined" && !window.location.pathname.includes("/auth/login")) {
+        window.location.href = "/auth/login"
       }
       return response
     }
@@ -106,8 +109,8 @@ export async function apiFetch(
       processQueue(e, null)
       isRefreshing = false
       clearTokens()
-      if (typeof window !== "undefined" && !window.location.pathname.includes("/login")) {
-        window.location.href = "/login"
+      if (typeof window !== "undefined" && !window.location.pathname.includes("/auth/login")) {
+        window.location.href = "/auth/login"
       }
       return response
     }

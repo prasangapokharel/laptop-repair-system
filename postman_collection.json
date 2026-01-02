@@ -1,0 +1,1343 @@
+{
+  "info": {
+    "name": "Laptop Repair Store Management API",
+    "description": "Complete API collection for Laptop Repair Store Management System. Organized by role and module. Perfect for frontend developers.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0",
+    "_lastUpdated": "2026-01-01T20:00:00Z"
+  },
+  "item": [
+    {
+      "name": "SETUP & AUTHENTICATION",
+      "description": "Initialize environment and authenticate users",
+      "item": [
+        {
+          "name": "1. Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/health",
+              "host": ["{{BASE_URL}}"],
+              "path": ["health"]
+            },
+            "description": "Check if backend server is running"
+          },
+          "response": []
+        },
+        {
+          "name": "2. Server Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/",
+              "host": ["{{BASE_URL}}"],
+              "path": [""]
+            },
+            "description": "Get server API information"
+          },
+          "response": []
+        },
+        {
+          "name": "3. Register New User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"New User\",\n  \"phone\": \"8888888888\",\n  \"email\": \"newuser@repair.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/auth/register",
+              "host": ["{{BASE_URL}}"],
+              "path": ["auth", "register"]
+            },
+            "description": "Register a new user account"
+          },
+          "response": []
+        },
+        {
+          "name": "4. Login - Reception User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"9876543210\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/auth/login",
+              "host": ["{{BASE_URL}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Login with Reception role user (test credentials)"
+          },
+          "response": []
+        },
+        {
+          "name": "5. Refresh Access Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh_token\": \"{{REFRESH_TOKEN}}\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/auth/refresh",
+              "host": ["{{BASE_URL}}"],
+              "path": ["auth", "refresh"]
+            },
+            "description": "Get new access token using refresh token"
+          },
+          "response": []
+        },
+        {
+          "name": "6. Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/auth/logout",
+              "host": ["{{BASE_URL}}"],
+              "path": ["auth", "logout"]
+            },
+            "description": "Logout current user and invalidate token"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "RECEPTION ROLE - Customer Service",
+      "description": "Features available to Reception/Receptionist users for customer service",
+      "item": [
+        {
+          "name": "View All Orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/orders?limit=20&offset=0",
+              "host": ["{{BASE_URL}}"],
+              "path": ["orders"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                }
+              ]
+            },
+            "description": "Get list of all orders - Reception can view all"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Order Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/orders/1",
+              "host": ["{{BASE_URL}}"],
+              "path": ["orders", "1"]
+            },
+            "description": "Get detailed information about a specific order. Change '1' to actual order ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Create New Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"device_id\": 1,\n  \"problem_ids\": [1, 2],\n  \"status\": \"Pending\",\n  \"description\": \"Laptop not turning on\",\n  \"estimated_cost\": 500\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/orders",
+              "host": ["{{BASE_URL}}"],
+              "path": ["orders"]
+            },
+            "description": "Create a new repair order for a customer"
+          },
+          "response": []
+        },
+        {
+          "name": "View All Customers",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/users?role_name=Customer&limit=20",
+              "host": ["{{BASE_URL}}"],
+              "path": ["users"],
+              "query": [
+                {
+                  "key": "role_name",
+                  "value": "Customer"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "View all registered customers (Admin only, may return 403)"
+          },
+          "response": []
+        },
+        {
+          "name": "View All Devices",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/devices?limit=50",
+              "host": ["{{BASE_URL}}"],
+              "path": ["devices"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "50"
+                }
+              ]
+            },
+            "description": "List all registered devices in the system"
+          },
+          "response": []
+        },
+        {
+          "name": "View Device Types",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/devices/types",
+              "host": ["{{BASE_URL}}"],
+              "path": ["devices", "types"]
+            },
+            "description": "Get all device types (Laptop, Desktop, Tablet, etc.)"
+          },
+          "response": []
+        },
+        {
+          "name": "View Device Brands",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/devices/brands",
+              "host": ["{{BASE_URL}}"],
+              "path": ["devices", "brands"]
+            },
+            "description": "Get all device brands (Dell, HP, Lenovo, Apple, etc.)"
+          },
+          "response": []
+        },
+        {
+          "name": "View Device Models",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/devices/models",
+              "host": ["{{BASE_URL}}"],
+              "path": ["devices", "models"]
+            },
+            "description": "Get all device models"
+          },
+          "response": []
+        },
+        {
+          "name": "View Problems/Issues",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/problems",
+              "host": ["{{BASE_URL}}"],
+              "path": ["problems"]
+            },
+            "description": "Get all possible device problems/issues (Screen broken, Battery dead, etc.)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "TECHNICIAN ROLE - Repair Service",
+      "description": "Features available to Technician users for handling repairs",
+      "item": [
+        {
+          "name": "View Assigned Orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/orders?status=In Progress",
+              "host": ["{{BASE_URL}}"],
+              "path": ["orders"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "In Progress"
+                }
+              ]
+            },
+            "description": "Get orders assigned to this technician (In Progress status)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Order Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/orders/1",
+              "host": ["{{BASE_URL}}"],
+              "path": ["orders", "1"]
+            },
+            "description": "Get detailed information about assigned repair order"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Order Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Completed\",\n  \"description\": \"Repair completed successfully. Screen replaced and tested.\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/orders/1",
+              "host": ["{{BASE_URL}}"],
+              "path": ["orders", "1"]
+            },
+            "description": "Update repair order status (In Progress -> Completed)"
+          },
+          "response": []
+        },
+        {
+          "name": "View All Assignments",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/assigns",
+              "host": ["{{BASE_URL}}"],
+              "path": ["assigns"]
+            },
+            "description": "View all task assignments"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "ACCOUNTANT ROLE - Payment & Billing",
+      "description": "Features available to Accountant users for handling payments and billing",
+      "item": [
+        {
+          "name": "View All Payments",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/payments?limit=50",
+              "host": ["{{BASE_URL}}"],
+              "path": ["payments"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "50"
+                }
+              ]
+            },
+            "description": "View all payment records - Accountant can see all transactions"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Payment Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/payments/1",
+              "host": ["{{BASE_URL}}"],
+              "path": ["payments", "1"]
+            },
+            "description": "Get detailed information about a specific payment"
+          },
+          "response": []
+        },
+        {
+          "name": "Record Payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"order_id\": 1,\n  \"amount\": 5000,\n  \"payment_method\": \"Credit Card\",\n  \"status\": \"Paid\",\n  \"date\": \"2026-01-01\",\n  \"description\": \"Payment received via card\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/payments",
+              "host": ["{{BASE_URL}}"],
+              "path": ["payments"]
+            },
+            "description": "Record a new payment for an order"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Payment Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Paid\",\n  \"description\": \"Payment completed\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/payments/1",
+              "host": ["{{BASE_URL}}"],
+              "path": ["payments", "1"]
+            },
+            "description": "Update payment status (Pending -> Paid or Cancelled)"
+          },
+          "response": []
+        },
+        {
+          "name": "View All Orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/orders?limit=50",
+              "host": ["{{BASE_URL}}"],
+              "path": ["orders"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "50"
+                }
+              ]
+            },
+            "description": "View all orders for billing purposes"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "ADMIN ROLE - Full Control",
+      "description": "Complete administrative features for system management",
+      "item": [
+        {
+          "name": "Admin Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/admin/dashboard",
+              "host": ["{{BASE_URL}}"],
+              "path": ["admin", "dashboard"]
+            },
+            "description": "Get admin dashboard with statistics (counts, revenue, etc.)"
+          },
+          "response": []
+        },
+        {
+          "name": "View All Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/users?limit=50",
+              "host": ["{{BASE_URL}}"],
+              "path": ["users"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "50"
+                }
+              ]
+            },
+            "description": "View all users in the system - Admin only"
+          },
+          "response": []
+        },
+        {
+          "name": "Get User Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/users/1",
+              "host": ["{{BASE_URL}}"],
+              "path": ["users", "1"]
+            },
+            "description": "Get detailed information about a specific user"
+          },
+          "response": []
+        },
+        {
+          "name": "Create New User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"John Technician\",\n  \"phone\": \"7777777777\",\n  \"email\": \"tech@repair.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/users",
+              "host": ["{{BASE_URL}}"],
+              "path": ["users"]
+            },
+            "description": "Create a new user account - Admin only"
+          },
+          "response": []
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Updated Name\",\n  \"email\": \"updated@repair.com\",\n  \"phone\": \"9999999999\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/users/1",
+              "host": ["{{BASE_URL}}"],
+              "path": ["users", "1"]
+            },
+            "description": "Update user information - Admin only"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/users/1",
+              "host": ["{{BASE_URL}}"],
+              "path": ["users", "1"]
+            },
+            "description": "Delete a user account - Admin only"
+          },
+          "response": []
+        },
+        {
+          "name": "Assign Role to User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role_id\": 2\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/users/1/assign-role",
+              "host": ["{{BASE_URL}}"],
+              "path": ["users", "1", "assign-role"]
+            },
+            "description": "Assign a role to user. Role IDs: 1=Admin, 2=Technician, 3=Reception, 4=Receptionist, 5=Accountant, 6=Customer"
+          },
+          "response": []
+        },
+        {
+          "name": "View Cost Settings",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/cost-settings",
+              "host": ["{{BASE_URL}}"],
+              "path": ["cost-settings"]
+            },
+            "description": "View all cost settings for repairs - Admin only"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Cost Setting",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"device_type_id\": 1,\n  \"problem_id\": 1,\n  \"cost\": 1000,\n  \"description\": \"Screen replacement for laptop\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/cost-settings",
+              "host": ["{{BASE_URL}}"],
+              "path": ["cost-settings"]
+            },
+            "description": "Create a new cost setting for device repairs"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Cost Setting",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cost\": 1200,\n  \"description\": \"Updated screen replacement cost\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/cost-settings/1",
+              "host": ["{{BASE_URL}}"],
+              "path": ["cost-settings", "1"]
+            },
+            "description": "Update cost setting - Admin only"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Cost Setting",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/cost-settings/1",
+              "host": ["{{BASE_URL}}"],
+              "path": ["cost-settings", "1"]
+            },
+            "description": "Delete a cost setting - Admin only"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Device Type",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Monitor\",\n  \"description\": \"External computer monitor\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/devices/types",
+              "host": ["{{BASE_URL}}"],
+              "path": ["devices", "types"]
+            },
+            "description": "Create a new device type - Admin only"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Device Brand",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Samsung\",\n  \"description\": \"Samsung electronics brand\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/devices/brands",
+              "host": ["{{BASE_URL}}"],
+              "path": ["devices", "brands"]
+            },
+            "description": "Create a new device brand - Admin only"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Device Model",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"brand_id\": 1,\n  \"device_type_id\": 1,\n  \"name\": \"Dell XPS 13\",\n  \"description\": \"13-inch ultrabook\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/devices/models",
+              "host": ["{{BASE_URL}}"],
+              "path": ["devices", "models"]
+            },
+            "description": "Create a new device model - Admin only"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Problem Type",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Motherboard Issue\",\n  \"description\": \"Faulty motherboard\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/problems",
+              "host": ["{{BASE_URL}}"],
+              "path": ["problems"]
+            },
+            "description": "Create a new problem type - Admin only"
+          },
+          "response": []
+        },
+        {
+          "name": "View All Orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/orders?limit=100",
+              "host": ["{{BASE_URL}}"],
+              "path": ["orders"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "100"
+                }
+              ]
+            },
+            "description": "View all orders in system - Admin only"
+          },
+          "response": []
+        },
+        {
+          "name": "View All Payments",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/payments?limit=100",
+              "host": ["{{BASE_URL}}"],
+              "path": ["payments"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "100"
+                }
+              ]
+            },
+            "description": "View all payments in system - Admin only"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "CUSTOMER ROLE - Self Service",
+      "description": "Features available to Customer users for managing their own repairs",
+      "item": [
+        {
+          "name": "View My Orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/orders",
+              "host": ["{{BASE_URL}}"],
+              "path": ["orders"]
+            },
+            "description": "View all orders belonging to current customer"
+          },
+          "response": []
+        },
+        {
+          "name": "Get My Order Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/orders/1",
+              "host": ["{{BASE_URL}}"],
+              "path": ["orders", "1"]
+            },
+            "description": "Get details about one of my orders"
+          },
+          "response": []
+        },
+        {
+          "name": "View My Devices",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/devices",
+              "host": ["{{BASE_URL}}"],
+              "path": ["devices"]
+            },
+            "description": "View all my registered devices"
+          },
+          "response": []
+        },
+        {
+          "name": "View My Payments",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/payments",
+              "host": ["{{BASE_URL}}"],
+              "path": ["payments"]
+            },
+            "description": "View payment history for my orders"
+          },
+          "response": []
+        },
+        {
+          "name": "View Available Problems",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/problems",
+              "host": ["{{BASE_URL}}"],
+              "path": ["problems"]
+            },
+            "description": "View all possible device problems"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "DEVICE MANAGEMENT - Advanced",
+      "description": "Advanced device management features (mostly admin)",
+      "item": [
+        {
+          "name": "Create New Device",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model_id\": 1,\n  \"serial_number\": \"ABC123456\",\n  \"color\": \"Silver\",\n  \"status\": \"Active\",\n  \"owner_id\": 1\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/devices",
+              "host": ["{{BASE_URL}}"],
+              "path": ["devices"]
+            },
+            "description": "Create a new device record"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Device Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/devices/1",
+              "host": ["{{BASE_URL}}"],
+              "path": ["devices", "1"]
+            },
+            "description": "Get detailed information about a specific device"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Device",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"In Repair\",\n  \"color\": \"Space Gray\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/devices/1",
+              "host": ["{{BASE_URL}}"],
+              "path": ["devices", "1"]
+            },
+            "description": "Update device information"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Device",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/devices/1",
+              "host": ["{{BASE_URL}}"],
+              "path": ["devices", "1"]
+            },
+            "description": "Delete a device record"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Device Type",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Desktop Computer\",\n  \"description\": \"Updated description\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/devices/types/1",
+              "host": ["{{BASE_URL}}"],
+              "path": ["devices", "types", "1"]
+            },
+            "description": "Update device type - Admin only"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Device Type",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/devices/types/1",
+              "host": ["{{BASE_URL}}"],
+              "path": ["devices", "types", "1"]
+            },
+            "description": "Delete device type - Admin only"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "ORDER MANAGEMENT - Advanced",
+      "description": "Advanced order management features",
+      "item": [
+        {
+          "name": "Delete Order",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/orders/1",
+              "host": ["{{BASE_URL}}"],
+              "path": ["orders", "1"]
+            },
+            "description": "Delete an order - Admin only"
+          },
+          "response": []
+        },
+        {
+          "name": "Assign Order to Technician",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"order_id\": 1,\n  \"user_id\": 3\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/assigns",
+              "host": ["{{BASE_URL}}"],
+              "path": ["assigns"]
+            },
+            "description": "Assign an order to a technician"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Assignment Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/assigns/1",
+              "host": ["{{BASE_URL}}"],
+              "path": ["assigns", "1"]
+            },
+            "description": "Get details about an assignment"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Assignment",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/assigns/1",
+              "host": ["{{BASE_URL}}"],
+              "path": ["assigns", "1"]
+            },
+            "description": "Delete an assignment - unassign from technician"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "BASE_URL",
+      "value": "http://localhost:8000/api/v1",
+      "type": "string",
+      "description": "Base URL for API. Change this if your backend is on a different host/port"
+    },
+    {
+      "key": "ACCESS_TOKEN",
+      "value": "",
+      "type": "string",
+      "description": "JWT access token. Copy from login response after 'Login - Reception User' request"
+    },
+    {
+      "key": "REFRESH_TOKEN",
+      "value": "",
+      "type": "string",
+      "description": "JWT refresh token. Copy from login response"
+    }
+  ]
+}

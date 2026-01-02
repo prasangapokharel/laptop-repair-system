@@ -1,7 +1,8 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 from decimal import Decimal
+from schemas.problem import ProblemResponse
 
 
 class OrderCreate(BaseModel):
@@ -41,9 +42,29 @@ class OrderResponse(BaseModel):
     completed_at: Optional[datetime]
     created_at: datetime
     updated_at: datetime
+    problem: Optional[ProblemResponse] = None
 
     class Config:
         from_attributes = True
+
+
+class OrderStatusHistoryResponse(BaseModel):
+    id: int
+    order_id: int
+    status: str
+    changed_by: Optional[int]
+    note: Optional[str]
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class OrderListResponse(BaseModel):
+    items: List[OrderResponse]
+    total: int
+    page: int
+    limit: int
 
 
 class OrderAssignCreate(BaseModel):
@@ -59,4 +80,3 @@ class OrderAssignResponse(BaseModel):
 
     class Config:
         from_attributes = True
-

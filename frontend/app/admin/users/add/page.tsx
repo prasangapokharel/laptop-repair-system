@@ -51,7 +51,7 @@ export default function AdminAddUserPage() {
     try {
       let imagePath = profilePath
       if (file && !imagePath) {
-        imagePath = await uploadProfileImage(file)
+        imagePath = await uploadProfileImage(fullName, file)
         setProfilePath(imagePath)
       }
       const user = await createUser({
@@ -160,7 +160,7 @@ export default function AdminAddUserPage() {
                           variant="outline"
                           onClick={async () => {
                             if (file) {
-                              const p = await uploadProfileImage(file)
+                              const p = await uploadProfileImage(fullName, file)
                               setProfilePath(p)
                             }
                           }}

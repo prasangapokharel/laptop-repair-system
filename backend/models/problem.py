@@ -13,6 +13,7 @@ class Problem(Base):
     description = Column(Text)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
+    device_type = relationship("DeviceType")
     cost_settings = relationship("CostSetting", back_populates="problem", cascade="all, delete-orphan")
 
     __table_args__ = (UniqueConstraint("device_type_id", "name"),)

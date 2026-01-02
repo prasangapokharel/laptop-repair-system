@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from datetime import datetime, timedelta, timezone
@@ -14,8 +14,8 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 @router.post("/register", response_model=UserResponse, status_code=201)
-async def register(data: RegisterRequest, db: AsyncSession = Depends(get_db)):
-    existing = await db.execute(select(User).where(User.phone == data.phone))
+async def register(data: RegisterRequest, db: Session = Depends(get_db)):
+    existing = db.execute(select(User).where(User.phone == data.phone))
     if existing.scalar_one_or_none():
         raise HTTPException(status_code=400, detail="Phone already registered")
     
@@ -26,11 +26,11 @@ async def register(data: RegisterRequest, db: AsyncSession = Depends(get_db)):
         password_hash=hash_password(data.password)
     )
     db.add(user)
-    await db.commit()
-    await db.refresh(user)
+    db.commit()
+    db.refresh(user)
     
     # Reload with roles (will be empty for new users)
-    result = await db.execute(
+    result = db.execute(
         select(User)
         .options(selectinload(User.roles).selectinload(RoleEnroll.role))
         .where(User.id == user.id)
@@ -41,9 +41,9 @@ async def register(data: RegisterRequest, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/login", response_model=LoginResponse)
-async def login(data: LoginRequest, db: AsyncSession = Depends(get_db)):
+async def login(data: LoginRequest, db: Session = Depends(get_db)):
     try:
-        result = await db.execute(
+        result = db.execute(
             select(User)
             .options(selectinload(User.roles).selectinload(RoleEnroll.role))
             .where(User.phone == data.phone)
@@ -79,7 +79,7 @@ async def login(data: LoginRequest, db: AsyncSession = Depends(get_db)):
             expires_at=expires_at
         )
         db.add(token_record)
-        await db.commit()
+        db.commit()
         
         # Build user response with roles
         user_dict = UserResponse.model_validate(user).model_dump()
@@ -108,13 +108,13 @@ async def login(data: LoginRequest, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/refresh", response_model=RefreshResponse)
-async def refresh(data: RefreshRequest, db: AsyncSession = Depends(get_db)):
+async def refresh(data: RefreshRequest, db: Session = Depends(get_db)):
     payload = decode_token(data.refresh_token)
     if not payload or payload.get("type") != "refresh":
         raise HTTPException(status_code=401, detail="Invalid refresh token")
     
     user_id = int(payload.get("sub"))
-    token_record = await db.execute(
+    token_record = db.execute(
         select(RefreshToken).where(
             RefreshToken.token == data.refresh_token,
             RefreshToken.user_id == user_id,
@@ -125,7 +125,7 @@ async def refresh(data: RefreshRequest, db: AsyncSession = Depends(get_db)):
     if not token:
         raise HTTPException(status_code=401, detail="Refresh token not found or expired")
     
-    result = await db.execute(select(User).where(User.id == user_id))
+    result = db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
     if not user or not user.is_active:
         raise HTTPException(status_code=403, detail="User not found or inactive")
@@ -135,9 +135,9 @@ async def refresh(data: RefreshRequest, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/logout", status_code=204)
-async def logout(data: RefreshRequest, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(RefreshToken).where(RefreshToken.token == data.refresh_token))
+async def logout(data: RefreshRequest, db: Session = Depends(get_db)):
+    result = db.execute(select(RefreshToken).where(RefreshToken.token == data.refresh_token))
     token = result.scalar_one_or_none()
     if token:
-        await db.delete(token)
-        await db.commit()
+        db.delete(token)
+        db.commit()

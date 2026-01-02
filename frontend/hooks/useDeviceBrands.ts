@@ -1,34 +1,62 @@
-import { useEffect, useState } from "react"
-import { apiJson } from "@/lib/api"
+/**
+ * Device Brands Hook
+ * Provides functionality for fetching, creating, updating, and deleting device brands
+ */
 
-export type DeviceBrand = {
+"use client"
+import { useEffect, useState } from "react"
+import { api } from "@/lib/api-client"
+import { API_ENDPOINTS } from "@/config/api.config"
+import { useApiMutation, useApiUpdate, useApiDelete } from "@/hooks/useApi"
+
+export interface DeviceBrand {
   id: number
   name: string
   created_at: string
 }
 
+interface CreateBrandPayload {
+  name: string
+}
+
+interface UpdateBrandPayload {
+  name: string
+}
+
+/**
+ * Fetch all device brands
+ */
 export function useDeviceBrands() {
   const [data, setData] = useState<DeviceBrand[]>([])
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     let cancelled = false
-    async function run() {
+
+    async function fetchBrands() {
       setLoading(true)
       setError(null)
       try {
-        const res = await apiJson<DeviceBrand[]>(`/devices/brands`)
-        if (!cancelled) setData(res)
-      } catch (e) {
+        const res = await api.get<DeviceBrand[]>(API_ENDPOINTS.DEVICES.BRANDS.LIST)
+        if (!cancelled) {
+          setData(res)
+        }
+      } catch (err) {
         const message =
-          e instanceof Error ? e.message : "Failed to load brands"
-        if (!cancelled) setError(message)
+          err instanceof Error ? err.message : "Failed to load brands"
+        if (!cancelled) {
+          setError(message)
+        }
       } finally {
-        if (!cancelled) setLoading(false)
+        if (!cancelled) {
+          setLoading(false)
+        }
       }
     }
-    run()
+
+    fetchBrands()
+
     return () => {
       cancelled = true
     }
@@ -37,22 +65,27 @@ export function useDeviceBrands() {
   return { data, loading, error }
 }
 
-export async function createDeviceBrand(input: { name: string }) {
-  return apiJson<DeviceBrand>(`/devices/brands`, {
-    method: "POST",
-    body: JSON.stringify(input),
-  })
+/**
+ * Create new device brand
+ */
+export function useCreateDeviceBrand() {
+  return useApiMutation<CreateBrandPayload, DeviceBrand>(
+    API_ENDPOINTS.DEVICES.BRANDS.CREATE
+  )
 }
 
-export async function updateDeviceBrand(id: number, input: { name: string }) {
-  return apiJson<DeviceBrand>(`/devices/brands/${id}`, {
-    method: "PATCH",
-    body: JSON.stringify(input),
-  })
+/**
+ * Update device brand
+ */
+export function useUpdateDeviceBrand() {
+  return useApiUpdate<UpdateBrandPayload, DeviceBrand>(
+    API_ENDPOINTS.DEVICES.BRANDS.LIST
+  )
 }
 
-export async function deleteDeviceBrand(id: number) {
-  return apiJson<void>(`/devices/brands/${id}`, {
-    method: "DELETE",
-  })
+/**
+ * Delete device brand
+ */
+export function useDeleteDeviceBrand() {
+  return useApiDelete(API_ENDPOINTS.DEVICES.BRANDS.LIST)
 }

@@ -21,26 +21,19 @@ export default function AdminEditProblemPage() {
   const { data: deviceTypes } = useDeviceTypes()
   const router = useRouter()
   
-  const [name, setName] = useState("")
-  const [description, setDescription] = useState("")
+  const [name, setName] = useState<string | null>(null)
+  const [description, setDescription] = useState<string | null>(null)
   const [deviceTypeId, setDeviceTypeId] = useState<number | null>(null)
-
-  useEffect(() => {
-    if (problem) {
-      setName(problem.name)
-      setDescription(problem.description || "")
-      setDeviceTypeId(problem.device_type_id)
-    }
-  }, [problem])
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!deviceTypeId) return
+    const finalDeviceTypeId = deviceTypeId ?? problem?.device_type_id ?? null
+    if (!finalDeviceTypeId) return
     try {
       await updateProblem(id, {
-        device_type_id: deviceTypeId,
-        name,
-        description,
+        device_type_id: finalDeviceTypeId,
+        name: name ?? problem?.name ?? "",
+        description: description ?? problem?.description ?? "",
       })
       router.push("/admin/problem")
     } catch {}
@@ -66,20 +59,11 @@ export default function AdminEditProblemPage() {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>Name</Label>
-                      <Input
-                        type="text"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        placeholder="Broken Screen"
-                        required
-                      />
+                      <Input type="text" value={name ?? problem?.name ?? ""} onChange={(e) => setName(e.target.value)} placeholder="Broken Screen" required />
                     </div>
                     <div className="space-y-2">
                       <Label>Device Type</Label>
-                      <Select 
-                        value={deviceTypeId ? String(deviceTypeId) : undefined}
-                        onValueChange={(v) => setDeviceTypeId(Number(v))}
-                      >
+                      <Select value={(deviceTypeId ?? problem?.device_type_id ?? undefined) ? String(deviceTypeId ?? problem?.device_type_id) : undefined} onValueChange={(v) => setDeviceTypeId(Number(v))}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select device type" />
                         </SelectTrigger>
@@ -94,12 +78,7 @@ export default function AdminEditProblemPage() {
                     </div>
                     <div className="space-y-2 col-span-2">
                       <Label>Description</Label>
-                      <Input
-                        type="text"
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        placeholder="Optional description"
-                      />
+                      <Input type="text" value={description ?? problem?.description ?? ""} onChange={(e) => setDescription(e.target.value)} placeholder="Optional description" />
                     </div>
                   </div>
                   {error && (

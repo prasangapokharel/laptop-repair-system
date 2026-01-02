@@ -22,12 +22,14 @@ BASE_URL = os.getenv("BASE_URL", "http://localhost:8000")
 BASE_URL = BASE_URL.rstrip('/')
 if BASE_URL.endswith('/v1'):
     BASE_URL = BASE_URL[:-3]
+# Override to correct base
+BASE_URL = "http://localhost:8000"
 
 
 class CustomerIssueTest:
     def __init__(self):
         self.base_url = BASE_URL
-        self.api_url = f"{BASE_URL}/v1"  # API URL with /v1 prefix
+        self.api_url = f"{BASE_URL}/api/v1"  # API URL with /api/v1 prefix
         self.access_token = None
         self.customers = []
         self.devices = []
@@ -117,7 +119,7 @@ class CustomerIssueTest:
                         "password": admin_data["password"]
                     })
                     if login_resp.status_code == 200:
-                        tokens = login_resp.json()
+                        tokens = login_resp.json()['tokens']
                         self.access_token = tokens.get("access_token")
                 else:
                     login_resp = await client.post(f"{self.api_url}/auth/login", json={
@@ -125,7 +127,7 @@ class CustomerIssueTest:
                         "password": admin_data["password"]
                     })
                     if login_resp.status_code == 200:
-                        tokens = login_resp.json()
+                        tokens = login_resp.json()['tokens']
                         self.access_token = tokens.get("access_token")
             except:
                 pass
@@ -133,8 +135,8 @@ class CustomerIssueTest:
             if not self.access_token:
                 # Use existing seeded user
                 login_resp = await client.post(f"{self.api_url}/auth/login", json={
-                    "phone": "1111111111",
-                    "password": "adminpass"
+                    "phone": "9876543210",
+                    "password": "password123"
                 })
                 if login_resp.status_code == 200:
                     tokens = login_resp.json()
@@ -211,6 +213,7 @@ class CustomerIssueTest:
             }
             
             # Register customer
+            register_resp = None
             try:
                 register_resp = await client.post(f"{self.api_url}/auth/register", json=customer_data)
                 if register_resp.status_code not in [201, 400]:
@@ -229,7 +232,7 @@ class CustomerIssueTest:
             
             tokens = login_resp.json()
             customer_token = tokens.get("access_token", "")
-            customer_id = tokens.get("user_id") or register_resp.json().get("id") if register_resp.status_code == 201 else None
+            customer_id = tokens.get("user_id") or (register_resp.json().get("id") if register_resp and register_resp.status_code == 201 else None)
             
             if not customer_id:
                 # Get user ID from token or register response
@@ -414,16 +417,16 @@ class CustomerIssueTest:
         
         async with httpx.AsyncClient() as client:
             # Get admin token
-                login_resp = await client.post(f"{self.api_url}/auth/login", json={
-                "phone": "1111111111",
-                "password": "adminpass"
+            login_resp = await client.post(f"{self.api_url}/auth/login", json={
+                "phone": "9876543210",
+                "password": "password123"
             })
             if login_resp.status_code != 200:
                 return False
-            
+
             tokens = login_resp.json()
             headers = {"Authorization": f"Bearer {tokens.get('access_token', '')}"}
-            
+
             # Update random orders to different statuses
             updated = 0
             for customer in random.sample(self.customers, min(20, len(self.customers))):
@@ -458,16 +461,16 @@ class CustomerIssueTest:
             return False
         
         async with httpx.AsyncClient() as client:
-                login_resp = await client.post(f"{self.api_url}/auth/login", json={
-                "phone": "1111111111",
-                "password": "adminpass"
+            login_resp = await client.post(f"{self.api_url}/auth/login", json={
+                "phone": "9876543210",
+                "password": "password123"
             })
             if login_resp.status_code != 200:
                 return False
-            
+
             tokens = login_resp.json()
             headers = {"Authorization": f"Bearer {tokens.get('access_token', '')}"}
-            
+
             # Get payments for random orders
             payments_created = 0
             for customer in random.sample(self.customers, min(15, len(self.customers))):
@@ -502,18 +505,18 @@ class CustomerIssueTest:
         print("="*70)
         
         async with httpx.AsyncClient() as client:
-                login_resp = await client.post(f"{self.api_url}/auth/login", json={
-                "phone": "1111111111",
-                "password": "adminpass"
+            login_resp = await client.post(f"{self.api_url}/auth/login", json={
+                "phone": "9876543210",
+                "password": "password123"
             })
             if login_resp.status_code != 200:
                 return False
-            
+
             tokens = login_resp.json()
             headers = {"Authorization": f"Bearer {tokens.get('access_token', '')}"}
-            
+
             queries_passed = 0
-            
+
             # Query orders by status
             for status in ["Pending", "Repairing", "Completed", "Cancelled"]:
                 try:

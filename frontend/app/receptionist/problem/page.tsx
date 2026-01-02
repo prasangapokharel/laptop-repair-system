@@ -3,172 +3,129 @@
 import { ReceptionistSidebar } from "@/components/sidebar/receptionist"
 import { SiteHeader } from "@/components/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
-import { Separator } from "@/components/ui/separator"
 import { Button } from "@/components/ui/button"
+import { TableList } from "@/components/tables/table-list"
 import Link from "next/link"
 import { useProblems, useProblemMutations } from "@/hooks/useProblems"
-import { useRouter } from "next/navigation"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useState } from "react"
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination"
+import { Badge } from "@/components/ui/badge"
+import { Trash2, Edit, Plus, AlertCircle } from "lucide-react"
+import { Breadcrumb } from "@/components/breadcrumb"
 
 export default function ReceptionistProblemsPage() {
   const [page, setPage] = useState(1)
-  const limit = 10
+  const limit = 12
   const offset = (page - 1) * limit
-  
-  const { data, total, loading, error } = useProblems(limit, offset)
+
+  const { data: problems, total, loading, error } = useProblems(limit, offset)
   const { deleteProblem } = useProblemMutations()
-  const router = useRouter()
-  
-  const totalPages = Math.ceil(total / limit)
+
+  const columns = [
+    {
+      key: "id",
+      label: "ID",
+      render: (id: number) => <span className="font-semibold text-sm">#{id}</span>,
+      searchable: true,
+    },
+    {
+      key: "name",
+      label: "Problem Name",
+      searchable: true,
+    },
+    {
+      key: "description",
+      label: "Description",
+      render: (desc: string | null) => (
+        <p className="text-sm text-muted-foreground truncate max-w-xs">{desc || "N/A"}</p>
+      ),
+      searchable: true,
+    },
+    {
+      key: "device_type",
+      label: "Device Type",
+      render: (type: any) => (
+        <Badge variant="outline">{type?.name || "Unknown"}</Badge>
+      ),
+    },
+    {
+      key: "created_at",
+      label: "Created",
+      render: (date: string) => {
+        const d = new Date(date)
+        return <span className="text-sm text-muted-foreground">{d.toLocaleDateString()}</span>
+      },
+    },
+  ]
+
+  const handleDelete = async (id: number) => {
+    if (confirm("Are you sure you want to delete this problem? This action cannot be undone.")) {
+      try {
+        await deleteProblem(id)
+        window.location.reload()
+      } catch (err) {
+        alert("Failed to delete problem")
+      }
+    }
+  }
 
   return (
     <SidebarProvider>
       <ReceptionistSidebar />
       <SidebarInset>
         <SiteHeader />
-        <div className="px-6 py-4">
+        <div className="flex-1 space-y-4 p-4 md:p-6">
+          {/* Breadcrumb */}
+          <Breadcrumb
+            items={[
+              { label: "Dashboard", href: "/receptionist/dashboard" },
+              { label: "Problems" },
+            ]}
+          />
+
+          {/* Header */}
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold">Problems</h2>
-            <Button asChild>
-              <Link href="/receptionist/problem/add">Add Problem</Link>
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+                <AlertCircle className="h-8 w-8" />
+                Problems/Issues
+              </h1>
+              <p className="text-muted-foreground text-sm mt-1">Manage device problems and issue categories</p>
+            </div>
+            <Button asChild className="gap-2">
+              <Link href="/receptionist/problem/add">
+                <Plus className="h-4 w-4" />
+                Add Problem
+              </Link>
             </Button>
           </div>
-          <Separator className="my-4" />
-          {loading && data.length === 0 && <p>Loading...</p>}
-          {error && <p className="text-red-500">{error}</p>}
-          {!error && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Problems ({total})</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>ID</TableHead>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Description</TableHead>
-                      <TableHead>Device Type ID</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {data.map((problem) => (
-                      <TableRow key={problem.id}>
-                        <TableCell>#{problem.id}</TableCell>
-                        <TableCell>{problem.name}</TableCell>
-                        <TableCell>{problem.description || "-"}</TableCell>
-                        <TableCell>{problem.device_type?.name || problem.device_type_id}</TableCell>
-                        <TableCell>
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              asChild
-                            >
-                              <Link href={`/receptionist/problem/${problem.id}/edit`}>Edit</Link>
-                            </Button>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={async () => {
-                                if (confirm("Are you sure?")) {
-                                  await deleteProblem(problem.id)
-                                  window.location.reload()
-                                }
-                              }}
-                            >
-                              Delete
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                    {data.length === 0 && !loading && (
-                      <TableRow>
-                        <TableCell colSpan={5} className="text-center text-muted-foreground">
-                          No problems found
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-                {totalPages > 1 && (
-                    <div className="mt-4">
-                        <Pagination>
-                            <PaginationContent>
-                                <PaginationItem>
-                                    <PaginationPrevious 
-                                        href="#" 
-                                        onClick={(e) => {
-                                            e.preventDefault()
-                                            if (page > 1) setPage(page - 1)
-                                        }}
-                                        className={page === 1 ? "pointer-events-none opacity-50" : ""}
-                                    />
-                                </PaginationItem>
-                                
-                                {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => {
-                                    if (
-                                        p === 1 ||
-                                        p === totalPages ||
-                                        (p >= page - 1 && p <= page + 1)
-                                    ) {
-                                        return (
-                                        <PaginationItem key={p}>
-                                            <PaginationLink
-                                            href="#"
-                                            isActive={page === p}
-                                            onClick={(e) => {
-                                                e.preventDefault()
-                                                setPage(p)
-                                            }}
-                                            >
-                                            {p}
-                                            </PaginationLink>
-                                        </PaginationItem>
-                                        )
-                                    } else if (
-                                        p === page - 2 ||
-                                        p === page + 2
-                                    ) {
-                                        return (
-                                        <PaginationItem key={p}>
-                                            <PaginationEllipsis />
-                                        </PaginationItem>
-                                        )
-                                    }
-                                    return null
-                                })}
 
-                                <PaginationItem>
-                                    <PaginationNext 
-                                        href="#" 
-                                        onClick={(e) => {
-                                            e.preventDefault()
-                                            if (page < totalPages) setPage(page + 1)
-                                        }}
-                                        className={page === totalPages ? "pointer-events-none opacity-50" : ""}
-                                    />
-                                </PaginationItem>
-                            </PaginationContent>
-                        </Pagination>
-                    </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
+          <TableList
+            title="All Problems"
+            description="View and manage all device problems and issues that customers report"
+            data={problems}
+            columns={columns}
+            isLoading={loading}
+            error={error}
+            totalCount={total}
+            currentPage={page}
+            pageSize={limit}
+            onPageChange={setPage}
+            actions={[
+              {
+                label: "Edit",
+                icon: <Edit className="h-4 w-4" />,
+                href: (id) => `/receptionist/problem/${id}/edit`,
+              },
+              {
+                label: "Delete",
+                icon: <Trash2 className="h-4 w-4" />,
+                onClick: handleDelete,
+                className: "text-red-600",
+              },
+            ]}
+            emptyMessage="No problems found in the system"
+            showSearch={true}
+          />
         </div>
       </SidebarInset>
     </SidebarProvider>

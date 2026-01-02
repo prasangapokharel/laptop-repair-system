@@ -1,11 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter, HTTPException, Depends, Query
+from utils.dependencies import require_admin, require_staff_or_customer, get_current_user
+from sqlalchemy.orm import Session
 from sqlalchemy import select, func
 from sqlalchemy.orm import selectinload
 from typing import List, Optional
 from db import get_db
 from models.user import User, Role, RoleEnroll
-from schemas.user import UserCreate, UserResponse, UserUpdate, RoleCreate, RoleResponse, RoleEnrollCreate, RoleEnrollResponse
+from schemas.user import UserCreate, UserResponse, UserUpdate, RoleCreate, RoleResponse, RoleEnrollCreate, RoleEnrollResponse, UserListResponse, RoleUpdate
 from utils.security import hash_password
 from datetime import datetime
 
@@ -13,8 +14,12 @@ router = APIRouter(prefix="/users", tags=["users"])
 
 
 @router.post("", response_model=UserResponse, status_code=201)
-async def create_user(user_data: UserCreate, db: AsyncSession = Depends(get_db)):
-    existing = await db.execute(select(User).where(User.phone == user_data.phone))
+async def create_user(
+    user_data: UserCreate,
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    existing = db.execute(select(User).where(User.phone == user_data.phone))
     if existing.scalar_one_or_none():
         raise HTTPException(status_code=400, detail="Phone already registered")
     
@@ -26,11 +31,11 @@ async def create_user(user_data: UserCreate, db: AsyncSession = Depends(get_db))
         profile_picture=user_data.profile_picture
     )
     db.add(user)
-    await db.commit()
-    await db.refresh(user)
+    db.commit()
+    db.refresh(user)
     
     # Reload with roles (will be null for new users)
-    result = await db.execute(
+    result = db.execute(
         select(User)
         .options(selectinload(User.roles).selectinload(RoleEnroll.role))
         .where(User.id == user.id)
@@ -39,61 +44,168 @@ async def create_user(user_data: UserCreate, db: AsyncSession = Depends(get_db))
     return user
 
 
-@router.get("", response_model=List[UserResponse])
+@router.get("", response_model=UserListResponse)
 async def list_users(
+    role_name: Optional[str] = Query(None),
     limit: int = Query(10, ge=1, le=100),
     offset: int = Query(0, ge=0),
-    db: AsyncSession = Depends(get_db)
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db)
 ):
-    result = await db.execute(
-        select(User)
-        .options(selectinload(User.roles).selectinload(RoleEnroll.role))
-        .limit(limit)
-        .offset(offset)
-    )
-    return result.scalars().all()
+    try:
+        # Get total count
+        count_query = select(func.count()).select_from(User)
+        
+        if role_name:
+            count_query = count_query.join(User.roles).join(RoleEnroll.role).where(Role.name == role_name)
+
+        count_result = db.execute(count_query)
+        total = count_result.scalar()
+
+        # Get items
+        query = (
+            select(User)
+            .options(selectinload(User.roles).selectinload(RoleEnroll.role))
+        )
+        
+        if role_name:
+            query = query.join(User.roles).join(RoleEnroll.role).where(Role.name == role_name)
+            
+        query = query.limit(limit).offset(offset)
+        
+        result = db.execute(query)
+        items = result.scalars().all()
+        
+        return {
+            "items": items,
+            "total": total,
+            "page": (offset // limit) + 1,
+            "limit": limit
+        }
+    except Exception as e:
+        import traceback
+        error_msg = str(e)
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Database error: {error_msg[:100]}")
 
 
 @router.post("/roles", response_model=RoleResponse, status_code=201)
-async def create_role(role_data: RoleCreate, db: AsyncSession = Depends(get_db)):
-    existing = await db.execute(select(Role).where(Role.name == role_data.name))
+async def create_role(
+    data: RoleCreate,
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    existing = db.execute(select(Role).where(Role.name == data.name))
     if existing.scalar_one_or_none():
         raise HTTPException(status_code=400, detail="Role already exists")
     
-    role = Role(name=role_data.name, description=role_data.description)
+    role = Role(name=data.name, description=data.description)
     db.add(role)
-    await db.commit()
-    await db.refresh(role)
+    db.commit()
+    db.refresh(role)
     return role
 
 
 @router.get("/roles", response_model=List[RoleResponse])
-async def list_roles(db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Role))
+async def list_roles(
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    result = db.execute(select(Role))
     return result.scalars().all()
 
 
+@router.get("/roles/{role_id}", response_model=RoleResponse)
+async def get_role(
+    role_id: int,
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    result = db.execute(select(Role).where(Role.id == role_id))
+    role = result.scalar_one_or_none()
+    if not role:
+        raise HTTPException(status_code=404, detail="Role not found")
+    return role
+
+
+@router.patch("/roles/{role_id}", response_model=RoleResponse)
+async def update_role(
+    role_id: int,
+    data: RoleUpdate,
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    result = db.execute(select(Role).where(Role.id == role_id))
+    role = result.scalar_one_or_none()
+    if not role:
+        raise HTTPException(status_code=404, detail="Role not found")
+    
+    update_data = data.model_dump(exclude_unset=True)
+    if "name" in update_data and update_data["name"] != role.name:
+        existing = db.execute(select(Role).where(Role.name == update_data["name"]))
+        if existing.scalar_one_or_none():
+            raise HTTPException(status_code=400, detail="Role name already exists")
+    
+    for field, value in update_data.items():
+        setattr(role, field, value)
+    
+    db.commit()
+    db.refresh(role)
+    return role
+
+
 @router.post("/roles/enroll", response_model=RoleEnrollResponse, status_code=201)
-async def enroll_role(enroll_data: RoleEnrollCreate, db: AsyncSession = Depends(get_db)):
-    existing = await db.execute(
+async def enroll_role(
+    data: RoleEnrollCreate,
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    existing = db.execute(
         select(RoleEnroll).where(
-            RoleEnroll.user_id == enroll_data.user_id,
-            RoleEnroll.role_id == enroll_data.role_id
+            RoleEnroll.user_id == data.user_id,
+            RoleEnroll.role_id == data.role_id
         )
     )
     if existing.scalar_one_or_none():
         raise HTTPException(status_code=400, detail="User already has this role")
-    
-    enroll = RoleEnroll(user_id=enroll_data.user_id, role_id=enroll_data.role_id)
+
+    user = db.execute(select(User).where(User.id == data.user_id))
+    if not user.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="User not found")
+
+    role = db.execute(select(Role).where(Role.id == data.role_id))
+    if not role.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="Role not found")
+
+    enroll = RoleEnroll(user_id=data.user_id, role_id=data.role_id)
     db.add(enroll)
-    await db.commit()
-    await db.refresh(enroll)
+    db.commit()
+    db.refresh(enroll)
     return enroll
 
 
+@router.delete("/roles/{role_id}", status_code=204)
+async def delete_role(
+    role_id: int,
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    result = db.execute(select(Role).where(Role.id == role_id))
+    role = result.scalar_one_or_none()
+    if not role:
+        raise HTTPException(status_code=404, detail="Role not found")
+    
+    db.delete(role)
+    db.commit()
+
+
 @router.get("/{user_id}", response_model=UserResponse)
-async def get_user(user_id: int, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(
+async def get_user(
+    user_id: int,
+    current_user: User = Depends(require_staff_or_customer),
+    db: Session = Depends(get_db)
+):
+    result = db.execute(
         select(User)
         .options(selectinload(User.roles).selectinload(RoleEnroll.role))
         .where(User.id == user_id)
@@ -101,17 +213,17 @@ async def get_user(user_id: int, db: AsyncSession = Depends(get_db)):
     user = result.scalar_one_or_none()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    # Debug: Print role information
-    print(f"User {user.id} roles: {user.roles}")
-    if user.roles:
-        for role_enroll in user.roles:
-            print(f"  RoleEnroll ID: {role_enroll.id}, Role: {getattr(role_enroll, 'role', None)}")
     return user
 
 
 @router.patch("/{user_id}", response_model=UserResponse)
-async def update_user(user_id: int, user_data: UserUpdate, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(User).where(User.id == user_id))
+async def update_user(
+    user_id: int,
+    user_data: UserUpdate,
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    result = db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -120,11 +232,11 @@ async def update_user(user_id: int, user_data: UserUpdate, db: AsyncSession = De
     for field, value in update_data.items():
         setattr(user, field, value)
     
-    await db.commit()
-    await db.refresh(user)
+    db.commit()
+    db.refresh(user)
     
     # Reload with roles
-    result = await db.execute(
+    result = db.execute(
         select(User)
         .options(selectinload(User.roles).selectinload(RoleEnroll.role))
         .where(User.id == user_id)
@@ -134,11 +246,69 @@ async def update_user(user_id: int, user_data: UserUpdate, db: AsyncSession = De
 
 
 @router.delete("/{user_id}", status_code=204)
-async def delete_user(user_id: int, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(User).where(User.id == user_id))
+async def delete_user(
+    user_id: int,
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    result = db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    await db.delete(user)
-    await db.commit()
+    db.delete(user)
+    db.commit()
 
+
+@router.post("/{user_id}/roles", response_model=RoleEnrollResponse, status_code=201)
+async def assign_role(
+    user_id: int,
+    data: RoleEnrollCreate,
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    if user_id != data.user_id:
+         raise HTTPException(status_code=400, detail="User ID mismatch")
+
+    user = db.execute(select(User).where(User.id == user_id))
+    if not user.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    role = db.execute(select(Role).where(Role.id == data.role_id))
+    if not role.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="Role not found")
+    
+    existing = db.execute(
+        select(RoleEnroll).where(
+            RoleEnroll.user_id == user_id,
+            RoleEnroll.role_id == data.role_id
+        )
+    )
+    if existing.scalar_one_or_none():
+        raise HTTPException(status_code=400, detail="Role already assigned to this user")
+    
+    enroll = RoleEnroll(user_id=user_id, role_id=data.role_id)
+    db.add(enroll)
+    db.commit()
+    db.refresh(enroll)
+    return enroll
+
+
+@router.delete("/{user_id}/roles/{role_id}", status_code=204)
+async def remove_role(
+    user_id: int,
+    role_id: int,
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    result = db.execute(
+        select(RoleEnroll).where(
+            RoleEnroll.user_id == user_id,
+            RoleEnroll.role_id == role_id
+        )
+    )
+    enroll = result.scalar_one_or_none()
+    if not enroll:
+        raise HTTPException(status_code=404, detail="Role assignment not found")
+    
+    db.delete(enroll)
+    db.commit()

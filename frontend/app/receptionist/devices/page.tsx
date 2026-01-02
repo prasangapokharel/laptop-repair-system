@@ -3,138 +3,109 @@
 import { ReceptionistSidebar } from "@/components/sidebar/receptionist"
 import { SiteHeader } from "@/components/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
-import { Separator } from "@/components/ui/separator"
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
+import { TableList } from "@/components/tables/table-list"
 import { useDeviceList } from "@/hooks/useDeviceList"
-import { useDeviceBrands } from "@/hooks/useDeviceBrands"
-import { useDeviceModels } from "@/hooks/useDeviceModels"
-import { useDeviceTypes } from "@/hooks/useDeviceTypes"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useState } from "react"
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination"
+import { Badge } from "@/components/ui/badge"
+import { Eye, Smartphone } from "lucide-react"
+import { Breadcrumb } from "@/components/breadcrumb"
 
 export default function ReceptionistDevicesPage() {
   const [page, setPage] = useState(1)
-  const limit = 10
+  const limit = 12
   const offset = (page - 1) * limit
 
-  const { data, loading, error } = useDeviceList(limit, offset)
-  const { data: brands } = useDeviceBrands()
-  const { data: models } = useDeviceModels()
-  const { data: types } = useDeviceTypes()
+  const { data: devices, total, loading, error } = useDeviceList(limit, offset)
 
-  const brandMap = Object.fromEntries(brands.map((b) => [b.id, b.name]))
-  const modelMap = Object.fromEntries(models.map((m) => [m.id, m.name]))
-  const typeMap = Object.fromEntries(types.map((t) => [t.id, t.name]))
-
-  // We don't have total count from useDeviceList yet, so simple pagination
-  // Or we assume next page exists if data.length === limit
-  const hasMore = data.length === limit
+  const columns = [
+    {
+      key: "id",
+      label: "Device ID",
+      render: (id: number) => <span className="font-semibold text-sm">#{id}</span>,
+      searchable: true,
+    },
+    {
+      key: "serial_number",
+      label: "Serial Number",
+      render: (serial: string | null) => (
+        <span className="font-mono text-sm bg-muted px-2 py-1 rounded">{serial || "N/A"}</span>
+      ),
+      searchable: true,
+    },
+    {
+      key: "device_type",
+      label: "Type",
+      render: (type: any) => (
+        <Badge variant="outline" className="flex w-fit">{type?.name || "Unknown"}</Badge>
+      ),
+    },
+    {
+      key: "brand",
+      label: "Brand",
+      render: (brand: any) => <span className="font-semibold text-sm">{brand?.name || "N/A"}</span>,
+      searchable: true,
+    },
+    {
+      key: "model",
+      label: "Model",
+      render: (model: any) => <span className="text-sm">{model?.name || "N/A"}</span>,
+      searchable: true,
+    },
+    {
+      key: "color",
+      label: "Color",
+      render: (color: string | null) => (
+        <span className="text-sm">{color || "N/A"}</span>
+      ),
+    },
+  ]
 
   return (
     <SidebarProvider>
       <ReceptionistSidebar />
       <SidebarInset>
         <SiteHeader />
-        <div className="px-6 py-4">
+        <div className="flex-1 space-y-4 p-4 md:p-6">
+          {/* Breadcrumb */}
+          <Breadcrumb
+            items={[
+              { label: "Dashboard", href: "/receptionist/dashboard" },
+              { label: "Devices" },
+            ]}
+          />
+
+          {/* Header */}
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold">Devices</h2>
-            {/* Receptionist might not need to add devices directly if it's done during order creation, 
-                but keeping it consistent with other pages */}
-            {/* <Button asChild>
-              <Link href="/receptionist/devices/add">Add Device</Link>
-            </Button> */}
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+                <Smartphone className="h-8 w-8" />
+                Devices
+              </h1>
+              <p className="text-muted-foreground text-sm mt-1">Manage and view all device inventory in the system</p>
+            </div>
           </div>
-          <Separator className="my-4" />
-          {loading && data.length === 0 && <p>Loading...</p>}
-          {error && <p className="text-red-500">{error}</p>}
-          {!error && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">All Devices</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>ID</TableHead>
-                      <TableHead>Serial Number</TableHead>
-                      <TableHead>Brand</TableHead>
-                      <TableHead>Model</TableHead>
-                      <TableHead>Type</TableHead>
-                      {/* <TableHead>Actions</TableHead> */}
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {data.map((device) => (
-                      <TableRow key={device.id}>
-                        <TableCell>#{device.id}</TableCell>
-                        <TableCell>{device.serial_number || "-"}</TableCell>
-                        <TableCell>{brandMap[device.brand_id] || device.brand_id}</TableCell>
-                        <TableCell>{modelMap[device.model_id] || device.model_id}</TableCell>
-                        <TableCell>{typeMap[device.device_type_id] || device.device_type_id}</TableCell>
-                        {/* <TableCell>
-                           <Button variant="outline" size="sm" asChild>
-                            <Link href={`/receptionist/devices/${device.id}/edit`}>Edit</Link>
-                          </Button> 
-                        </TableCell> */}
-                      </TableRow>
-                    ))}
-                    {data.length === 0 && !loading && (
-                      <TableRow>
-                        <TableCell colSpan={5} className="text-center text-muted-foreground">
-                          No devices found
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-                
-                <div className="mt-4">
-                    <Pagination>
-                        <PaginationContent>
-                            <PaginationItem>
-                                <PaginationPrevious 
-                                    href="#" 
-                                    onClick={(e) => {
-                                        e.preventDefault()
-                                        if (page > 1) setPage(page - 1)
-                                    }}
-                                    className={page === 1 ? "pointer-events-none opacity-50" : ""}
-                                />
-                            </PaginationItem>
-                            
-                            <PaginationItem>
-                                <PaginationLink href="#" isActive>{page}</PaginationLink>
-                            </PaginationItem>
 
-                            <PaginationItem>
-                                <PaginationNext 
-                                    href="#" 
-                                    onClick={(e) => {
-                                        e.preventDefault()
-                                        if (hasMore) setPage(page + 1)
-                                    }}
-                                    className={!hasMore ? "pointer-events-none opacity-50" : ""}
-                                />
-                            </PaginationItem>
-                        </PaginationContent>
-                    </Pagination>
-                </div>
-
-              </CardContent>
-            </Card>
-          )}
+          <TableList
+            title="All Devices"
+            description="Browse through all registered devices with their types, brands, models, and specifications"
+            data={devices}
+            columns={columns}
+            isLoading={loading}
+            error={error}
+            totalCount={total}
+            currentPage={page}
+            pageSize={limit}
+            onPageChange={setPage}
+            actions={[
+              {
+                label: "View Details",
+                icon: <Eye className="h-4 w-4" />,
+                href: (id) => `/receptionist/devices/${id}`,
+              },
+            ]}
+            emptyMessage="No devices found in the system"
+            showSearch={true}
+          />
         </div>
       </SidebarInset>
     </SidebarProvider>

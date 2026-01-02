@@ -1,35 +1,55 @@
-import { useEffect, useState } from "react"
-import { apiJson } from "@/lib/api"
+/**
+ * Roles Hook
+ * Provides functionality for fetching and managing user roles
+ */
 
-export type Role = {
+"use client"
+import { useEffect, useState } from "react"
+import { api } from "@/lib/api-client"
+import { API_ENDPOINTS } from "@/config/api.config"
+
+export interface Role {
   id: number
   name: string
   description: string
   created_at: string
 }
 
+/**
+ * Fetch all user roles
+ */
 export function useRoles() {
   const [data, setData] = useState<Role[]>([])
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     let cancelled = false
-    async function run() {
+
+    async function fetchRoles() {
       setLoading(true)
       setError(null)
       try {
-        const res = await apiJson<Role[]>(`/users/roles`)
-        if (!cancelled) setData(res)
-      } catch (e) {
+        // Note: This endpoint might not be in API_ENDPOINTS, using direct path
+        const res = await api.get<Role[]>("/users/roles")
+        if (!cancelled) {
+          setData(res)
+        }
+      } catch (err) {
         const message =
-          e instanceof Error ? e.message : "Failed to load roles"
-        if (!cancelled) setError(message)
+          err instanceof Error ? err.message : "Failed to load roles"
+        if (!cancelled) {
+          setError(message)
+        }
       } finally {
-        if (!cancelled) setLoading(false)
+        if (!cancelled) {
+          setLoading(false)
+        }
       }
     }
-    run()
+
+    fetchRoles()
+
     return () => {
       cancelled = true
     }
@@ -38,16 +58,16 @@ export function useRoles() {
   return { data, loading, error }
 }
 
-export async function createRole(input: { name: string; description?: string }) {
-  return apiJson<Role>(`/users/roles`, {
-    method: "POST",
-    body: JSON.stringify(input),
-  })
+/**
+ * Create new role
+ */
+export async function createRole(input: { name: string; description?: string }): Promise<Role> {
+  return api.post<Role>("/users/roles", input)
 }
 
-export async function assignRole(user_id: number, role_id: number) {
-  return apiJson<void>(`/users/roles/enroll`, {
-    method: "POST",
-    body: JSON.stringify({ user_id, role_id }),
-  })
+/**
+ * Assign role to user
+ */
+export async function assignRole(user_id: number, role_id: number): Promise<void> {
+  return api.post("/users/roles/enroll", { user_id, role_id })
 }

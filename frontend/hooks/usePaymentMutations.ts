@@ -1,8 +1,15 @@
-import { useState } from "react"
-import { apiJson } from "@/lib/api"
+/**
+ * Payment Mutations Hook
+ * Provides functions for creating, updating, and deleting payments
+ */
+
+"use client"
+import { useState, useCallback } from "react"
+import { api } from "@/lib/api-client"
+import { API_ENDPOINTS } from "@/config/api.config"
 import type { Payment } from "./usePayments"
 
-type CreatePaymentInput = {
+interface CreatePaymentInput {
   order_id: number
   due_amount: string
   amount: string
@@ -11,66 +18,70 @@ type CreatePaymentInput = {
   transaction_id?: string | null
 }
 
-type UpdatePaymentInput = Partial<CreatePaymentInput>
+interface UpdatePaymentInput extends Partial<CreatePaymentInput> {}
 
+/**
+ * Hook for payment mutations (create, update, delete)
+ */
 export function usePaymentMutations() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  async function createPayment(input: CreatePaymentInput) {
-    setLoading(true)
-    setError(null)
-    try {
-      const res = await apiJson<Payment>(`/payments`, {
-        method: "POST",
-        body: JSON.stringify(input),
-      })
-      return res
-    } catch (e) {
-      const message =
-        e instanceof Error ? e.message : "Failed to create payment"
-      setError(message)
-      throw e
-    } finally {
-      setLoading(false)
-    }
-  }
+  const createPayment = useCallback(
+    async (input: CreatePaymentInput): Promise<Payment> => {
+      setLoading(true)
+      setError(null)
+      try {
+        const res = await api.post<Payment>(API_ENDPOINTS.PAYMENTS.CREATE, input)
+        return res
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Failed to create payment"
+        setError(message)
+        throw err
+      } finally {
+        setLoading(false)
+      }
+    },
+    []
+  )
 
-  async function updatePayment(id: number, input: UpdatePaymentInput) {
-    setLoading(true)
-    setError(null)
-    try {
-      const res = await apiJson<Payment>(`/payments/${id}`, {
-        method: "PATCH",
-        body: JSON.stringify(input),
-      })
-      return res
-    } catch (e) {
-      const message =
-        e instanceof Error ? e.message : "Failed to update payment"
-      setError(message)
-      throw e
-    } finally {
-      setLoading(false)
-    }
-  }
+  const updatePayment = useCallback(
+    async (id: number, input: UpdatePaymentInput): Promise<Payment> => {
+      setLoading(true)
+      setError(null)
+      try {
+        const res = await api.patch<Payment>(
+          API_ENDPOINTS.PAYMENTS.UPDATE(id),
+          input
+        )
+        return res
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Failed to update payment"
+        setError(message)
+        throw err
+      } finally {
+        setLoading(false)
+      }
+    },
+    []
+  )
 
-  async function deletePayment(id: number) {
+  const deletePayment = useCallback(async (id: number): Promise<void> => {
     setLoading(true)
     setError(null)
     try {
-      await apiJson<void>(`/payments/${id}`, {
-        method: "DELETE",
-      })
-    } catch (e) {
+      await api.delete(API_ENDPOINTS.PAYMENTS.DELETE(id))
+    } catch (err) {
       const message =
-        e instanceof Error ? e.message : "Failed to delete payment"
+        err instanceof Error ? err.message : "Failed to delete payment"
       setError(message)
-      throw e
+      throw err
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   return { createPayment, updatePayment, deletePayment, loading, error }
 }

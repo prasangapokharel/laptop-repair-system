@@ -1,34 +1,63 @@
-import { useEffect, useState } from "react"
-import { apiJson } from "@/lib/api"
+/**
+ * Problems Management Hook
+ * Provides functionality for fetching, creating, updating, and deleting problems
+ */
 
-export type Problem = {
+"use client"
+import { useEffect, useState, useCallback } from "react"
+import { api } from "@/lib/api-client"
+import { API_ENDPOINTS } from "@/config/api.config"
+import {
+  useApiMutation,
+  useApiUpdate,
+  useApiDelete,
+} from "@/hooks/useApi"
+
+export interface Problem {
   id: number
   device_type_id: number
   name: string
   description: string | null
   created_at: string
+  updated_at?: string
   device_type?: {
     id: number
     name: string
   }
 }
 
-export type ProblemListResponse = {
+export interface ProblemListResponse {
   items: Problem[]
   total: number
   page: number
   limit: number
 }
 
+interface CreateProblemPayload {
+  device_type_id: number
+  name: string
+  description?: string
+}
+
+interface UpdateProblemPayload {
+  device_type_id?: number
+  name?: string
+  description?: string
+}
+
+/**
+ * Fetch problems with optional filters
+ */
 export function useProblems(limit = 10, offset = 0, device_type_id?: number) {
   const [data, setData] = useState<Problem[]>([])
   const [total, setTotal] = useState(0)
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     let cancelled = false
-    async function run() {
+
+    async function fetchProblems() {
       setLoading(true)
       setError(null)
       try {
@@ -36,23 +65,32 @@ export function useProblems(limit = 10, offset = 0, device_type_id?: number) {
         params.append("limit", String(limit))
         params.append("offset", String(offset))
         if (device_type_id) params.append("device_type_id", String(device_type_id))
-        
-        const res = await apiJson<ProblemListResponse>(
-          `/problems?${params.toString()}`
-        )
+
+        const path =
+          params.toString()
+            ? `${API_ENDPOINTS.PROBLEMS.LIST}?${params.toString()}`
+            : API_ENDPOINTS.PROBLEMS.LIST
+
+        const res = await api.get<ProblemListResponse>(path)
         if (!cancelled) {
           setData(res.items)
           setTotal(res.total)
         }
-      } catch (e) {
+      } catch (err) {
         const message =
-          e instanceof Error ? e.message : "Failed to load problems"
-        if (!cancelled) setError(message)
+          err instanceof Error ? err.message : "Failed to load problems"
+        if (!cancelled) {
+          setError(message)
+        }
       } finally {
-        if (!cancelled) setLoading(false)
+        if (!cancelled) {
+          setLoading(false)
+        }
       }
     }
-    run()
+
+    fetchProblems()
+
     return () => {
       cancelled = true
     }
@@ -61,6 +99,9 @@ export function useProblems(limit = 10, offset = 0, device_type_id?: number) {
   return { data, total, loading, error }
 }
 
+/**
+ * Fetch single problem by ID
+ */
 export function useProblem(id: number | null) {
   const [data, setData] = useState<Problem | null>(null)
   const [loading, setLoading] = useState(false)
@@ -68,24 +109,32 @@ export function useProblem(id: number | null) {
 
   useEffect(() => {
     if (!id) return
+
     let cancelled = false
-    async function run() {
+
+    async function fetchProblem() {
       setLoading(true)
       setError(null)
       try {
-        const res = await apiJson<Problem>(`/problems/${id}`)
+        const res = await api.get<Problem>(API_ENDPOINTS.PROBLEMS.DETAIL(id))
         if (!cancelled) {
           setData(res)
         }
-      } catch (e) {
+      } catch (err) {
         const message =
-          e instanceof Error ? e.message : "Failed to load problem"
-        if (!cancelled) setError(message)
+          err instanceof Error ? err.message : "Failed to load problem"
+        if (!cancelled) {
+          setError(message)
+        }
       } finally {
-        if (!cancelled) setLoading(false)
+        if (!cancelled) {
+          setLoading(false)
+        }
       }
     }
-    run()
+
+    fetchProblem()
+
     return () => {
       cancelled = true
     }
@@ -94,69 +143,48 @@ export function useProblem(id: number | null) {
   return { data, loading, error }
 }
 
+/**
+ * Create new problem
+ */
+export function useCreateProblem() {
+  return useApiMutation<CreateProblemPayload, Problem>(
+    API_ENDPOINTS.PROBLEMS.CREATE
+  )
+}
+
+/**
+ * Update problem
+ */
+export function useUpdateProblem() {
+  return useApiUpdate<UpdateProblemPayload, Problem>(API_ENDPOINTS.PROBLEMS.LIST)
+}
+
+/**
+ * Delete problem
+ */
+export function useDeleteProblem() {
+  return useApiDelete(API_ENDPOINTS.PROBLEMS.LIST)
+}
+
+/**
+ * Mutations hook for create, update, delete operations
+ */
 export function useProblemMutations() {
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const { mutate: createProblem, loading: createLoading, error: createError } = useCreateProblem()
+  const { update: updateProblem, loading: updateLoading, error: updateError } = useUpdateProblem()
+  const { deleteItem: deleteProblem, loading: deleteLoading, error: deleteError } = useDeleteProblem()
 
-  async function createProblem(data: {
-    device_type_id: number
-    name: string
-    description?: string
-  }) {
-    setLoading(true)
-    setError(null)
-    try {
-      const res = await apiJson<Problem>("/problems", {
-        method: "POST",
-        body: JSON.stringify(data),
-      })
-      return res
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to create problem")
-      throw e
-    } finally {
-      setLoading(false)
-    }
+  return {
+    createProblem: async (payload: CreateProblemPayload) => {
+      return await createProblem(payload)
+    },
+    updateProblem: async (id: number, payload: UpdateProblemPayload) => {
+      return await updateProblem(id, payload)
+    },
+    deleteProblem: async (id: number) => {
+      return await deleteProblem(id)
+    },
+    loading: createLoading || updateLoading || deleteLoading,
+    error: createError || updateError || deleteError,
   }
-
-  async function updateProblem(
-    id: number,
-    data: {
-      device_type_id?: number
-      name?: string
-      description?: string
-    }
-  ) {
-    setLoading(true)
-    setError(null)
-    try {
-      const res = await apiJson<Problem>(`/problems/${id}`, {
-        method: "PATCH",
-        body: JSON.stringify(data),
-      })
-      return res
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to update problem")
-      throw e
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  async function deleteProblem(id: number) {
-    setLoading(true)
-    setError(null)
-    try {
-      await apiJson(`/problems/${id}`, {
-        method: "DELETE",
-      })
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to delete problem")
-      throw e
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  return { createProblem, updateProblem, deleteProblem, loading, error }
 }

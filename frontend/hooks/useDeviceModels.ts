@@ -1,7 +1,15 @@
-import { useEffect, useState } from "react"
-import { apiJson } from "@/lib/api"
+/**
+ * Device Models Hook
+ * Provides functionality for fetching, creating, updating, and deleting device models
+ */
 
-export type DeviceModel = {
+"use client"
+import { useEffect, useState } from "react"
+import { api } from "@/lib/api-client"
+import { API_ENDPOINTS } from "@/config/api.config"
+import { useApiMutation, useApiUpdate, useApiDelete } from "@/hooks/useApi"
+
+export interface DeviceModel {
   id: number
   brand_id: number
   name: string
@@ -9,28 +17,52 @@ export type DeviceModel = {
   created_at: string
 }
 
+interface CreateModelPayload {
+  brand_id: number
+  name: string
+  device_type_id: number
+}
+
+interface UpdateModelPayload {
+  brand_id?: number
+  name?: string
+  device_type_id?: number
+}
+
+/**
+ * Fetch all device models
+ */
 export function useDeviceModels() {
   const [data, setData] = useState<DeviceModel[]>([])
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     let cancelled = false
-    async function run() {
+
+    async function fetchModels() {
       setLoading(true)
       setError(null)
       try {
-        const res = await apiJson<DeviceModel[]>(`/devices/models`)
-        if (!cancelled) setData(res)
-      } catch (e) {
+        const res = await api.get<DeviceModel[]>(API_ENDPOINTS.DEVICES.MODELS.LIST)
+        if (!cancelled) {
+          setData(res)
+        }
+      } catch (err) {
         const message =
-          e instanceof Error ? e.message : "Failed to load models"
-        if (!cancelled) setError(message)
+          err instanceof Error ? err.message : "Failed to load models"
+        if (!cancelled) {
+          setError(message)
+        }
       } finally {
-        if (!cancelled) setLoading(false)
+        if (!cancelled) {
+          setLoading(false)
+        }
       }
     }
-    run()
+
+    fetchModels()
+
     return () => {
       cancelled = true
     }
@@ -39,29 +71,27 @@ export function useDeviceModels() {
   return { data, loading, error }
 }
 
-export async function createDeviceModel(input: {
-  brand_id: number
-  name: string
-  device_type_id: number
-}) {
-  return apiJson<DeviceModel>(`/devices/models`, {
-    method: "POST",
-    body: JSON.stringify(input),
-  })
+/**
+ * Create new device model
+ */
+export function useCreateDeviceModel() {
+  return useApiMutation<CreateModelPayload, DeviceModel>(
+    API_ENDPOINTS.DEVICES.MODELS.CREATE
+  )
 }
 
-export async function updateDeviceModel(
-  id: number,
-  input: Partial<{ brand_id: number; name: string; device_type_id: number }>
-) {
-  return apiJson<DeviceModel>(`/devices/models/${id}`, {
-    method: "PATCH",
-    body: JSON.stringify(input),
-  })
+/**
+ * Update device model
+ */
+export function useUpdateDeviceModel() {
+  return useApiUpdate<UpdateModelPayload, DeviceModel>(
+    API_ENDPOINTS.DEVICES.MODELS.LIST
+  )
 }
 
-export async function deleteDeviceModel(id: number) {
-  return apiJson<void>(`/devices/models/${id}`, {
-    method: "DELETE",
-  })
+/**
+ * Delete device model
+ */
+export function useDeleteDeviceModel() {
+  return useApiDelete(API_ENDPOINTS.DEVICES.MODELS.LIST)
 }

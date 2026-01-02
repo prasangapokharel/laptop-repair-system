@@ -1,35 +1,65 @@
-import { useEffect, useState } from "react"
-import { apiJson } from "@/lib/api"
+/**
+ * Device Types Hook
+ * Provides functionality for fetching, creating, updating, and deleting device types
+ */
 
-export type DeviceType = {
+"use client"
+import { useEffect, useState } from "react"
+import { api } from "@/lib/api-client"
+import { API_ENDPOINTS } from "@/config/api.config"
+import { useApiMutation, useApiUpdate, useApiDelete } from "@/hooks/useApi"
+
+export interface DeviceType {
   id: number
   name: string
   description: string
   created_at: string
 }
 
+interface CreateTypePayload {
+  name: string
+  description: string
+}
+
+interface UpdateTypePayload {
+  name?: string
+  description?: string
+}
+
+/**
+ * Fetch all device types
+ */
 export function useDeviceTypes() {
   const [data, setData] = useState<DeviceType[]>([])
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     let cancelled = false
-    async function run() {
+
+    async function fetchTypes() {
       setLoading(true)
       setError(null)
       try {
-        const res = await apiJson<DeviceType[]>(`/devices/types`)
-        if (!cancelled) setData(res)
-      } catch (e) {
+        const res = await api.get<DeviceType[]>(API_ENDPOINTS.DEVICES.DEVICE_TYPES.LIST)
+        if (!cancelled) {
+          setData(res)
+        }
+      } catch (err) {
         const message =
-          e instanceof Error ? e.message : "Failed to load device types"
-        if (!cancelled) setError(message)
+          err instanceof Error ? err.message : "Failed to load device types"
+        if (!cancelled) {
+          setError(message)
+        }
       } finally {
-        if (!cancelled) setLoading(false)
+        if (!cancelled) {
+          setLoading(false)
+        }
       }
     }
-    run()
+
+    fetchTypes()
+
     return () => {
       cancelled = true
     }
@@ -38,28 +68,27 @@ export function useDeviceTypes() {
   return { data, loading, error }
 }
 
-export async function createDeviceType(input: {
-  name: string
-  description: string
-}) {
-  return apiJson<DeviceType>(`/devices/types`, {
-    method: "POST",
-    body: JSON.stringify(input),
-  })
+/**
+ * Create new device type
+ */
+export function useCreateDeviceType() {
+  return useApiMutation<CreateTypePayload, DeviceType>(
+    API_ENDPOINTS.DEVICES.DEVICE_TYPES.CREATE
+  )
 }
 
-export async function updateDeviceType(
-  id: number,
-  input: Partial<{ name: string; description: string }>
-) {
-  return apiJson<DeviceType>(`/devices/types/${id}`, {
-    method: "PATCH",
-    body: JSON.stringify(input),
-  })
+/**
+ * Update device type
+ */
+export function useUpdateDeviceType() {
+  return useApiUpdate<UpdateTypePayload, DeviceType>(
+    API_ENDPOINTS.DEVICES.DEVICE_TYPES.LIST
+  )
 }
 
-export async function deleteDeviceType(id: number) {
-  return apiJson<void>(`/devices/types/${id}`, {
-    method: "DELETE",
-  })
+/**
+ * Delete device type
+ */
+export function useDeleteDeviceType() {
+  return useApiDelete(API_ENDPOINTS.DEVICES.DEVICE_TYPES.LIST)
 }

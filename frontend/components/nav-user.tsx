@@ -44,7 +44,7 @@ export function NavUser({
 
   const handleLogout = async () => {
     await logout()
-    window.location.href = "/login"
+    window.location.href = "/auth/login"
   }
 
   return (

@@ -1,6 +1,12 @@
+/**
+ * Admin Dashboard Hook
+ * Fetches dashboard statistics and analytics data
+ */
+
 "use client"
 import { useEffect, useState } from "react"
-import { apiJson } from "@/lib/api"
+import { api } from "@/lib/api-client"
+import { API_ENDPOINTS } from "@/config/api.config"
 
 export type AdminDashboardStats = {
   users_count: number
@@ -15,27 +21,43 @@ export type AdminDashboardStats = {
   chart_data: { date: string; orders: number; payments: number }[]
 }
 
+/**
+ * Hook for fetching admin dashboard statistics
+ * @returns Object with dashboard stats, loading state, and error
+ */
 export function useAdminDashboard() {
   const [data, setData] = useState<AdminDashboardStats | null>(null)
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     let cancelled = false
-    async function run() {
+
+    async function fetchDashboard() {
       setLoading(true)
       setError(null)
       try {
-        const res = await apiJson<AdminDashboardStats>("/admin/dashboard")
-        if (!cancelled) setData(res)
-      } catch (e) {
-        const message = e instanceof Error ? e.message : "Failed to load dashboard"
-        if (!cancelled) setError(message)
+        const stats = await api.get<AdminDashboardStats>(
+          API_ENDPOINTS.ADMIN.DASHBOARD
+        )
+        if (!cancelled) {
+          setData(stats)
+        }
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Failed to load dashboard"
+        if (!cancelled) {
+          setError(message)
+        }
       } finally {
-        if (!cancelled) setLoading(false)
+        if (!cancelled) {
+          setLoading(false)
+        }
       }
     }
-    run()
+
+    fetchDashboard()
+
     return () => {
       cancelled = true
     }

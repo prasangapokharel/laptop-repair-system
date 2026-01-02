@@ -1,39 +1,90 @@
-import { useEffect, useState } from "react"
-import { apiJson } from "@/lib/api"
+/**
+ * Device List Hook
+ * Provides functionality for fetching devices
+ */
 
-type Device = {
+"use client"
+import { useEffect, useState } from "react"
+import { api } from "@/lib/api-client"
+import { API_ENDPOINTS } from "@/config/api.config"
+
+export interface Device {
   id: number
   brand_id: number
   model_id: number
   device_type_id: number
   serial_number: string | null
+  brand?: {
+    id: number
+    name: string
+  }
+  model?: {
+    id: number
+    name: string
+  }
+  device_type?: {
+    id: number
+    name: string
+  }
 }
 
-export function useDeviceList(limit = 50, offset = 0) {
+interface DeviceListResponse {
+  items: Device[]
+  total: number
+  page: number
+  limit: number
+}
+
+interface DeviceFilters {
+  limit?: number
+  offset?: number
+}
+
+/**
+ * Fetch devices with pagination
+ */
+export function useDeviceList(limit = 50, offset = 0, filters?: DeviceFilters) {
   const [data, setData] = useState<Device[]>([])
-  const [loading, setLoading] = useState(false)
+  const [total, setTotal] = useState(0)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const run = async () => {
+    let cancelled = false
+
+    const fetchDevices = async () => {
       setLoading(true)
       setError(null)
       try {
-        const res = await apiJson<Device[]>(
-          `/devices?limit=${limit}&offset=${offset}`
-        )
-        setData(res)
-      } catch (e) {
+        const params = new URLSearchParams()
+        params.append("limit", String(filters?.limit || limit))
+        params.append("offset", String(filters?.offset || offset))
+        
+        const path = `${API_ENDPOINTS.DEVICES.LIST}?${params.toString()}`
+        const res = await api.get<DeviceListResponse>(path)
+        if (!cancelled) {
+          setData(res.items)
+          setTotal(res.total)
+        }
+      } catch (err) {
         const message =
-          e instanceof Error ? e.message : "Failed to load devices"
-        setError(message)
+          err instanceof Error ? err.message : "Failed to load devices"
+        if (!cancelled) {
+          setError(message)
+        }
       } finally {
-        setLoading(false)
+        if (!cancelled) {
+          setLoading(false)
+        }
       }
     }
-    run()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [limit, offset])
 
-  return { data, loading, error }
+    fetchDevices()
+
+    return () => {
+      cancelled = true
+    }
+  }, [limit, offset, filters])
+
+  return { data, total, loading, error }
 }

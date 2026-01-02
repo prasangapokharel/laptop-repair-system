@@ -1,0 +1,1632 @@
+POST /v1/auth/register 
+{
+    "full_name": "Test User",
+    "phone": "{{$randomPhoneNumber}}",
+    "email": "test{{$randomInt}}@example.com",
+    "password": "password123"
+}
+{
+    "id": 55,
+    "full_name": "Test User",
+    "phone": "873-738-5313",
+    "email": "test348@example.com",
+    "profile_picture": null,
+    "is_active": true,
+    "is_staff": false,
+    "created_at": "2025-12-23T12:39:45",
+    "role": null
+}
+
+
+/v1/auth/login {
+    "user": {
+        "id": 2,
+        "full_name": "Test User",
+        "phone": "9876543210",
+        "email": "test@repair.com",
+        "profile_picture": null,
+        "is_active": true,
+        "is_staff": false,
+        "created_at": "2025-11-10T19:49:07",
+        "role": {
+            "id": 2,
+            "name": "Technician",
+            "description": "Repair technician who handles device repairs",
+            "created_at": "2025-11-10T19:43:40"
+        }
+    },
+    "tokens": {
+        "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyIiwicGhvbmUiOiI5ODc2NTQzMjEwIiwiZXhwIjoxNzY2NTU3Mjk1LCJ0eXBlIjoiYWNjZXNzIn0.ULQNabw-OMjyQkFQp3OhpyMa-AkmIITyB8Svnekf2pk",
+        "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyIiwiZXhwIjoxNzY5MDYyODk1LCJ0eXBlIjoicmVmcmVzaCJ9.LrdbDSCcm14V1YRcgY8cypBoihInuFwVty8R9ESUzxI",
+        "token_type": "bearer"
+    }
+}
+
+v1/auth/logout 
+{
+    "refresh_token": "{{refresh_token}}"
+} 
+
+{{base_url}}/v1/orders?limit=10&offset=0 
+
+[
+    {
+        "id": 2,
+        "device_id": 1,
+        "customer_id": null,
+        "problem_id": null,
+        "cost": "100.00",
+        "discount": "10.00",
+        "total_cost": "90.00",
+        "note": null,
+        "status": "Pending",
+        "estimated_completion_date": null,
+        "completed_at": null,
+        "created_at": "2025-11-10T19:35:37",
+        "updated_at": "2025-11-10T19:35:37"
+    },
+    {
+        "id": 3,
+        "device_id": 2,
+        "customer_id": null,
+        "problem_id": null,
+        "cost": "100.00",
+        "discount": "10.00",
+        "total_cost": "90.00",
+        "note": null,
+        "status": "Pending",
+        "estimated_completion_date": null,
+        "completed_at": null,
+        "created_at": "2025-11-10T19:41:31",
+        "updated_at": "2025-11-10T19:41:31"
+    },
+    {
+        "id": 4,
+        "device_id": 3,
+        "customer_id": null,
+        "problem_id": null,
+        "cost": "100.00",
+        "discount": "10.00",
+        "total_cost": "90.00",
+        "note": null,
+        "status": "Pending",
+        "estimated_completion_date": null,
+        "completed_at": null,
+        "created_at": "2025-11-10T19:44:31",
+        "updated_at": "2025-11-10T19:44:31"
+    },
+    {
+        "id": 5,
+        "device_id": 4,
+        "customer_id": null,
+        "problem_id": null,
+        "cost": "100.00",
+        "discount": "10.00",
+        "total_cost": "90.00",
+        "note": null,
+        "status": "Pending",
+        "estimated_completion_date": null,
+        "completed_at": null,
+        "created_at": "2025-11-10T19:45:16",
+        "updated_at": "2025-11-10T19:45:16"
+    },
+    {
+        "id": 6,
+        "device_id": 5,
+        "customer_id": null,
+        "problem_id": null,
+        "cost": "300.00",
+        "discount": "25.00",
+        "total_cost": "275.00",
+        "note": "Repair completed successfully. Device tested and working.",
+        "status": "Completed",
+        "estimated_completion_date": null,
+        "completed_at": null,
+        "created_at": "2025-11-10T19:49:57",
+        "updated_at": "2025-11-10T19:49:59"
+    },
+    {
+        "id": 7,
+        "device_id": 6,
+        "customer_id": null,
+        "problem_id": null,
+        "cost": "120.00",
+        "discount": "10.00",
+        "total_cost": "110.00",
+        "note": "Customer requested cancellation",
+        "status": "Cancelled",
+        "estimated_completion_date": null,
+        "completed_at": null,
+        "created_at": "2025-11-10T19:50:00",
+        "updated_at": "2025-11-10T19:50:02"
+    },
+    {
+        "id": 8,
+        "device_id": 7,
+        "customer_id": null,
+        "problem_id": null,
+        "cost": "300.00",
+        "discount": "25.00",
+        "total_cost": "275.00",
+        "note": "Repair completed successfully. Device tested and working.",
+        "status": "Completed",
+        "estimated_completion_date": null,
+        "completed_at": null,
+        "created_at": "2025-11-10T19:51:37",
+        "updated_at": "2025-11-10T19:51:38"
+    },
+    {
+        "id": 9,
+        "device_id": 8,
+        "customer_id": null,
+        "problem_id": null,
+        "cost": "120.00",
+        "discount": "10.00",
+        "total_cost": "110.00",
+        "note": "Customer requested cancellation",
+        "status": "Cancelled",
+        "estimated_completion_date": null,
+        "completed_at": null,
+        "created_at": "2025-11-10T19:51:39",
+        "updated_at": "2025-11-10T19:51:41"
+    },
+    {
+        "id": 10,
+        "device_id": 9,
+        "customer_id": null,
+        "problem_id": null,
+        "cost": "300.00",
+        "discount": "25.00",
+        "total_cost": "275.00",
+        "note": "Repair completed successfully. Device tested and working.",
+        "status": "Completed",
+        "estimated_completion_date": null,
+        "completed_at": null,
+        "created_at": "2025-11-10T19:52:11",
+        "updated_at": "2025-11-10T19:52:14"
+    },
+    {
+        "id": 11,
+        "device_id": 10,
+        "customer_id": null,
+        "problem_id": null,
+        "cost": "120.00",
+        "discount": "10.00",
+        "total_cost": "110.00",
+        "note": "Customer requested cancellation",
+        "status": "Cancelled",
+        "estimated_completion_date": null,
+        "completed_at": null,
+        "created_at": "2025-11-10T19:52:15",
+        "updated_at": "2025-11-10T19:52:17"
+    }
+] 
+
+/v1/orders?status=Pending&limit=10&offset=0 
+[
+    {
+        "id": 2,
+        "device_id": 1,
+        "customer_id": null,
+        "problem_id": null,
+        "cost": "100.00",
+        "discount": "10.00",
+        "total_cost": "90.00",
+        "note": null,
+        "status": "Pending",
+        "estimated_completion_date": null,
+        "completed_at": null,
+        "created_at": "2025-11-10T19:35:37",
+        "updated_at": "2025-11-10T19:35:37"
+    },
+    {
+        "id": 3,
+        "device_id": 2,
+        "customer_id": null,
+        "problem_id": null,
+        "cost": "100.00",
+        "discount": "10.00",
+        "total_cost": "90.00",
+        "note": null,
+        "status": "Pending",
+        "estimated_completion_date": null,
+        "completed_at": null,
+        "created_at": "2025-11-10T19:41:31",
+        "updated_at": "2025-11-10T19:41:31"
+    },
+    {
+        "id": 4,
+        "device_id": 3,
+        "customer_id": null,
+        "problem_id": null,
+        "cost": "100.00",
+        "discount": "10.00",
+        "total_cost": "90.00",
+        "note": null,
+        "status": "Pending",
+        "estimated_completion_date": null,
+        "completed_at": null,
+        "created_at": "2025-11-10T19:44:31",
+        "updated_at": "2025-11-10T19:44:31"
+    },
+    {
+        "id": 5,
+        "device_id": 4,
+        "customer_id": null,
+        "problem_id": null,
+        "cost": "100.00",
+        "discount": "10.00",
+        "total_cost": "90.00",
+        "note": null,
+        "status": "Pending",
+        "estimated_completion_date": null,
+        "completed_at": null,
+        "created_at": "2025-11-10T19:45:16",
+        "updated_at": "2025-11-10T19:45:16"
+    },
+    {
+        "id": 25,
+        "device_id": 24,
+        "customer_id": 8,
+        "problem_id": null,
+        "cost": "150.00",
+        "discount": "10.00",
+        "total_cost": "140.00",
+        "note": null,
+        "status": "Pending",
+        "estimated_completion_date": null,
+        "completed_at": null,
+        "created_at": "2025-11-10T20:19:07",
+        "updated_at": "2025-11-10T20:19:07"
+    },
+    {
+        "id": 28,
+        "device_id": 27,
+        "customer_id": 10,
+        "problem_id": null,
+        "cost": "150.00",
+        "discount": "10.00",
+        "total_cost": "140.00",
+        "note": null,
+        "status": "Pending",
+        "estimated_completion_date": null,
+        "completed_at": null,
+        "created_at": "2025-11-10T20:21:04",
+        "updated_at": "2025-11-10T20:21:04"
+    },
+    {
+        "id": 31,
+        "device_id": 30,
+        "customer_id": 12,
+        "problem_id": null,
+        "cost": "150.00",
+        "discount": "10.00",
+        "total_cost": "140.00",
+        "note": null,
+        "status": "Pending",
+        "estimated_completion_date": null,
+        "completed_at": null,
+        "created_at": "2025-11-10T20:21:43",
+        "updated_at": "2025-11-10T20:21:43"
+    },
+    {
+        "id": 35,
+        "device_id": 34,
+        "customer_id": 15,
+        "problem_id": null,
+        "cost": "150.00",
+        "discount": "10.00",
+        "total_cost": "140.00",
+        "note": null,
+        "status": "Pending",
+        "estimated_completion_date": null,
+        "completed_at": null,
+        "created_at": "2025-11-10T20:22:38",
+        "updated_at": "2025-11-10T20:22:38"
+    },
+    {
+        "id": 41,
+        "device_id": 40,
+        "customer_id": 27,
+        "problem_id": null,
+        "cost": "150.00",
+        "discount": "10.00",
+        "total_cost": "140.00",
+        "note": null,
+        "status": "Pending",
+        "estimated_completion_date": null,
+        "completed_at": null,
+        "created_at": "2025-11-10T21:36:28",
+        "updated_at": "2025-11-10T21:36:28"
+    },
+    {
+        "id": 43,
+        "device_id": 41,
+        "customer_id": 2,
+        "problem_id": null,
+        "cost": "150.00",
+        "discount": "0.00",
+        "total_cost": "150.00",
+        "note": "Battery replacement",
+        "status": "Pending",
+        "estimated_completion_date": null,
+        "completed_at": null,
+        "created_at": "2025-11-12T22:04:47",
+        "updated_at": "2025-11-12T22:04:47"
+    }
+]
+
+POST /v1/orders 
+{
+    "device_id": {{device_id}},
+    "customer_id": {{user_id}},
+    "cost": "{{$randomInt}}.00",
+    "discount": "{{$randomInt}}.00",
+    "note": "Random order note {{$randomInt}}",
+    "status": "Pending"
+} 
+
+repsonse {
+    "id": 104,
+    "device_id": 1,
+    "customer_id": 2,
+    "problem_id": null,
+    "cost": "655.00",
+    "discount": "398.00",
+    "total_cost": "257.00",
+    "note": "Random order note 247",
+    "status": "Pending",
+    "estimated_completion_date": null,
+    "completed_at": null,
+    "created_at": "2025-12-23T13:11:16",
+    "updated_at": "2025-12-23T13:11:16"
+}
+
+GET {{base_url}}/v1/devices/types
+[
+    {
+        "id": 1,
+        "name": "Laptop",
+        "description": "Laptop computers",
+        "created_at": "2025-11-10T19:31:55"
+    },
+    {
+        "id": 2,
+        "name": "Laptop_6211",
+        "description": "Laptop computers",
+        "created_at": "2025-11-10T19:35:36"
+    },
+    {
+        "id": 3,
+        "name": "Laptop_710",
+        "description": "Laptop computers",
+        "created_at": "2025-11-10T19:41:30"
+    },
+    {
+        "id": 5,
+        "name": "Desktop",
+        "description": "Desktop computers",
+        "created_at": "2025-11-10T19:43:40"
+    },
+    {
+        "id": 6,
+        "name": "Tablet",
+        "description": "Tablet devices",
+        "created_at": "2025-11-10T19:43:40"
+    },
+    {
+        "id": 7,
+        "name": "Smartphone",
+        "description": "Smartphone devices",
+        "created_at": "2025-11-10T19:43:40"
+    },
+    {
+        "id": 12,
+        "name": "Laptop_1169",
+        "description": "Laptop computers",
+        "created_at": "2025-11-10T19:44:31"
+    },
+    {
+        "id": 17,
+        "name": "Laptop_5544",
+        "description": "Laptop computers",
+        "created_at": "2025-11-10T19:45:15"
+    }
+] 
+
+POST /v1/devices/types 
+{
+    "name": "DeviceType{{$randomInt}}",
+    "description": "Random device type {{$randomInt}}"
+}
+
+GET /v1/devices/brands 
+[
+    {
+        "id": 1,
+        "name": "Dell",
+        "created_at": "2025-11-10T19:31:56"
+    },
+    {
+        "id": 2,
+        "name": "Dell_6211",
+        "created_at": "2025-11-10T19:35:36"
+    },
+    {
+        "id": 3,
+        "name": "Dell_710",
+        "created_at": "2025-11-10T19:41:30"
+    },
+    {
+        "id": 4,
+        "name": "Apple",
+        "created_at": "2025-11-10T19:43:40"
+    },
+    {
+        "id": 6,
+        "name": "HP",
+        "created_at": "2025-11-10T19:43:40"
+    },
+    {
+        "id": 7,
+        "name": "Lenovo",
+        "created_at": "2025-11-10T19:43:40"
+    },
+    {
+        "id": 8,
+        "name": "Asus",
+        "created_at": "2025-11-10T19:43:40"
+    },
+    {
+        "id": 9,
+        "name": "Acer",
+        "created_at": "2025-11-10T19:43:40"
+    },
+    {
+        "id": 10,
+        "name": "Samsung",
+        "created_at": "2025-11-10T19:43:40"
+    },
+    {
+        "id": 11,
+        "name": "Microsoft",
+        "created_at": "2025-11-10T19:43:40"
+    },
+    {
+        "id": 12,
+        "name": "Toshiba",
+        "created_at": "2025-11-10T19:43:40"
+    },
+    {
+        "id": 13,
+        "name": "Sony",
+        "created_at": "2025-11-10T19:43:40"
+    },
+    {
+        "id": 24,
+        "name": "Dell_1169",
+        "created_at": "2025-11-10T19:44:31"
+    },
+    {
+        "id": 35,
+        "name": "Dell_5544",
+        "created_at": "2025-11-10T19:45:15"
+    },
+    {
+        "id": 66,
+        "name": "Brand113",
+        "created_at": "2025-11-17T11:50:21"
+    }
+] 
+
+POST /v1/devices/brands 
+{
+    "name": "Brand{{$randomInt}}"
+}
+
+GET /v1/devices?limit=10&offset=0 [
+    {
+        "id": 1,
+        "brand_id": 2,
+        "model_id": 1,
+        "device_type_id": 2,
+        "serial_number": "SN6531",
+        "owner_id": null,
+        "notes": null,
+        "created_at": "2025-11-10T19:35:36",
+        "updated_at": "2025-11-10T19:35:36"
+    },
+    {
+        "id": 2,
+        "brand_id": 3,
+        "model_id": 2,
+        "device_type_id": 3,
+        "serial_number": "SN1019",
+        "owner_id": null,
+        "notes": null,
+        "created_at": "2025-11-10T19:41:31",
+        "updated_at": "2025-11-10T19:41:31"
+    },
+    {
+        "id": 3,
+        "brand_id": 24,
+        "model_id": 3,
+        "device_type_id": 12,
+        "serial_number": "SN1478",
+        "owner_id": null,
+        "notes": null,
+        "created_at": "2025-11-10T19:44:31",
+        "updated_at": "2025-11-10T19:44:31"
+    },
+    {
+        "id": 4,
+        "brand_id": 35,
+        "model_id": 4,
+        "device_type_id": 17,
+        "serial_number": "SN5850",
+        "owner_id": null,
+        "notes": null,
+        "created_at": "2025-11-10T19:45:15",
+        "updated_at": "2025-11-10T19:45:15"
+    },
+    {
+        "id": 5,
+        "brand_id": 1,
+        "model_id": 1,
+        "device_type_id": 1,
+        "serial_number": "LAPTOP001",
+        "owner_id": null,
+        "notes": "Screen cracked, needs replacement",
+        "created_at": "2025-11-10T19:49:56",
+        "updated_at": "2025-11-10T19:49:56"
+    },
+    {
+        "id": 6,
+        "brand_id": 2,
+        "model_id": 1,
+        "device_type_id": 1,
+        "serial_number": "LAPTOP002",
+        "owner_id": null,
+        "notes": "Keyboard not working",
+        "created_at": "2025-11-10T19:50:00",
+        "updated_at": "2025-11-10T19:50:00"
+    },
+    {
+        "id": 7,
+        "brand_id": 1,
+        "model_id": 1,
+        "device_type_id": 1,
+        "serial_number": "LAPTOP96524",
+        "owner_id": null,
+        "notes": "Screen cracked, needs replacement",
+        "created_at": "2025-11-10T19:51:36",
+        "updated_at": "2025-11-10T19:51:36"
+    },
+    {
+        "id": 8,
+        "brand_id": 1,
+        "model_id": 1,
+        "device_type_id": 1,
+        "serial_number": "LAPTOP99631",
+        "owner_id": null,
+        "notes": "Keyboard not working",
+        "created_at": "2025-11-10T19:51:39",
+        "updated_at": "2025-11-10T19:51:39"
+    },
+    {
+        "id": 9,
+        "brand_id": 1,
+        "model_id": 1,
+        "device_type_id": 1,
+        "serial_number": "LAPTOP31350",
+        "owner_id": null,
+        "notes": "Screen cracked, needs replacement",
+        "created_at": "2025-11-10T19:52:11",
+        "updated_at": "2025-11-10T19:52:11"
+    },
+    {
+        "id": 10,
+        "brand_id": 1,
+        "model_id": 1,
+        "device_type_id": 1,
+        "serial_number": "LAPTOP35061",
+        "owner_id": null,
+        "notes": "Keyboard not working",
+        "created_at": "2025-11-10T19:52:15",
+        "updated_at": "2025-11-10T19:52:15"
+    }
+]
+
+PATCH /v1/orders/{{order_id}} {
+    "id": 104,
+    "device_id": 1,
+    "customer_id": 2,
+    "problem_id": null,
+    "cost": "655.00",
+    "discount": "398.00",
+    "total_cost": "257.00",
+    "note": "Work in progress",
+    "status": "Repairing",
+    "estimated_completion_date": null,
+    "completed_at": null,
+    "created_at": "2025-12-23T13:11:16",
+    "updated_at": "2025-12-23T13:14:18"
+} 
+
+/v1/devices/models 
+[
+    {
+        "id": 1,
+        "brand_id": 2,
+        "name": "XPS 13_6513",
+        "device_type_id": 2,
+        "created_at": "2025-11-10T19:35:36"
+    },
+    {
+        "id": 2,
+        "brand_id": 3,
+        "name": "XPS 13_1001",
+        "device_type_id": 3,
+        "created_at": "2025-11-10T19:41:31"
+    },
+    {
+        "id": 3,
+        "brand_id": 24,
+        "name": "XPS 13_1464",
+        "device_type_id": 12,
+        "created_at": "2025-11-10T19:44:31"
+    },
+    {
+        "id": 4,
+        "brand_id": 35,
+        "name": "XPS 13_5833",
+        "device_type_id": 17,
+        "created_at": "2025-11-10T19:45:15"
+    },
+    {
+        "id": 5,
+        "brand_id": 4,
+        "name": "MacBook Pro",
+        "device_type_id": 1,
+        "created_at": "2025-11-10T21:11:12"
+    },
+    {
+        "id": 6,
+        "brand_id": 4,
+        "name": "MacBook Air",
+        "device_type_id": 1,
+        "created_at": "2025-11-10T21:11:12"
+    },
+    {
+        "id": 7,
+        "brand_id": 1,
+        "name": "XPS 13",
+        "device_type_id": 1,
+        "created_at": "2025-11-10T21:11:12"
+    },
+    {
+        "id": 8,
+        "brand_id": 1,
+        "name": "Inspiron 15",
+        "device_type_id": 1,
+        "created_at": "2025-11-10T21:11:12"
+    },
+    {
+        "id": 9,
+        "brand_id": 6,
+        "name": "Pavilion",
+        "device_type_id": 1,
+        "created_at": "2025-11-10T21:11:12"
+    },
+    {
+        "id": 10,
+        "brand_id": 6,
+        "name": "EliteBook",
+        "device_type_id": 1,
+        "created_at": "2025-11-10T21:11:12"
+    },
+    {
+        "id": 11,
+        "brand_id": 7,
+        "name": "ThinkPad",
+        "device_type_id": 1,
+        "created_at": "2025-11-10T21:11:12"
+    },
+    {
+        "id": 12,
+        "brand_id": 7,
+        "name": "IdeaPad",
+        "device_type_id": 1,
+        "created_at": "2025-11-10T21:11:12"
+    },
+    {
+        "id": 13,
+        "brand_id": 8,
+        "name": "ZenBook",
+        "device_type_id": 1,
+        "created_at": "2025-11-10T21:11:12"
+    },
+    {
+        "id": 14,
+        "brand_id": 8,
+        "name": "VivoBook",
+        "device_type_id": 1,
+        "created_at": "2025-11-10T21:11:12"
+    }
+] 
+
+
+POST /v1/devices/models 
+{
+    "brand_id": {{brand_id}},
+    "name": "Model{{$randomInt}}",
+    "device_type_id": {{device_type_id}}
+}
+
+GET /v1/users?limit=10&offset=0 
+
+[
+    {
+        "id": 2,
+        "full_name": "Test User",
+        "phone": "9876543210",
+        "email": "test@repair.com",
+        "profile_picture": null,
+        "is_active": true,
+        "is_staff": false,
+        "created_at": "2025-11-10T19:49:07",
+        "role": null
+    },
+    {
+        "id": 3,
+        "full_name": "John Customer 3682550",
+        "phone": "9873682550",
+        "email": "john.customer3682550@example.com",
+        "profile_picture": null,
+        "is_active": true,
+        "is_staff": false,
+        "created_at": "2025-11-10T19:53:03",
+        "role": null
+    },
+    {
+        "id": 4,
+        "full_name": "John Customer 3703626",
+        "phone": "9873703626",
+        "email": "john.customer3703626@example.com",
+        "profile_picture": null,
+        "is_active": true,
+        "is_staff": false,
+        "created_at": "2025-11-10T19:53:24",
+        "role": null
+    },
+    {
+        "id": 5,
+        "full_name": "John Customer 3724442",
+        "phone": "9873724442",
+        "email": "john.customer3724442@example.com",
+        "profile_picture": null,
+        "is_active": true,
+        "is_staff": false,
+        "created_at": "2025-11-10T19:53:45",
+        "role": null
+    },
+    {
+        "id": 6,
+        "full_name": "John Customer 3767647",
+        "phone": "9873767647",
+        "email": "john.customer3767647@example.com",
+        "profile_picture": null,
+        "is_active": true,
+        "is_staff": false,
+        "created_at": "2025-11-10T19:54:28",
+        "role": null
+    },
+    {
+        "id": 7,
+        "full_name": "John Customer 4934820",
+        "phone": "9874934820",
+        "email": "john.customer4934820@example.com",
+        "profile_picture": null,
+        "is_active": true,
+        "is_staff": false,
+        "created_at": "2025-11-10T20:13:55",
+        "role": null
+    },
+    {
+        "id": 8,
+        "full_name": "Store Customer 5241519",
+        "phone": "9995241519",
+        "email": "customer5241519@store.com",
+        "profile_picture": null,
+        "is_active": true,
+        "is_staff": false,
+        "created_at": "2025-11-10T20:19:02",
+        "role": null
+    },
+    {
+        "id": 9,
+        "full_name": "John Customer 5334912",
+        "phone": "9875334912",
+        "email": "john.customer5334912@example.com",
+        "profile_picture": null,
+        "is_active": true,
+        "is_staff": false,
+        "created_at": "2025-11-10T20:20:35",
+        "role": null
+    },
+    {
+        "id": 10,
+        "full_name": "Store Customer 5358322",
+        "phone": "9995358322",
+        "email": "customer5358322@store.com",
+        "profile_picture": null,
+        "is_active": true,
+        "is_staff": false,
+        "created_at": "2025-11-10T20:20:58",
+        "role": null
+    },
+    {
+        "id": 11,
+        "full_name": "John Customer 5378084",
+        "phone": "9875378084",
+        "email": "john.customer5378084@example.com",
+        "profile_picture": null,
+        "is_active": true,
+        "is_staff": false,
+        "created_at": "2025-11-10T20:21:18",
+        "role": null
+    }
+]
+
+POST /v1/users 
+
+{
+    "full_name": "Admin User",
+    "phone": "{{$randomPhoneNumber}}",
+    "email": "admin{{$randomInt}}@example.com",
+    "password": "password123"
+}
+
+ensure add here missing profile_imageg and role option select ensure add this ok 
+
+
+/v1/users/roles/v1/users/roles 
+[
+    {
+        "id": 1,
+        "name": "Admin",
+        "description": "System administrator with full access",
+        "created_at": "2025-11-10T19:43:40"
+    },
+    {
+        "id": 2,
+        "name": "Technician",
+        "description": "Repair technician who handles device repairs",
+        "created_at": "2025-11-10T19:43:40"
+    },
+    {
+        "id": 3,
+        "name": "Reception",
+        "description": "Reception staff who handles customer service",
+        "created_at": "2025-11-10T19:43:40"
+    },
+    {
+        "id": 4,
+        "name": "Accountant",
+        "description": "Accountant who manages financial transactions",
+        "created_at": "2025-11-10T19:43:40"
+    },
+    {
+        "id": 5,
+        "name": "Customer",
+        "description": "Customer who uses the service",
+        "created_at": "2025-11-10T19:43:40"
+    },
+    {
+        "id": 29,
+        "name": "Receptionist",
+        "description": "Reception staff who handles customer service",
+        "created_at": "2025-11-17T11:42:35"
+    }
+]
+
+Accountant
+POST /v1/payments 
+{
+    "order_id": {{order_id}},
+    "due_amount": "{{$randomInt}}.00",
+    "amount": "{{$randomInt}}.00",
+    "status": "Paid",
+    "payment_method": "Cash",
+    "transaction_id": "TXN{{$randomInt}}{{$randomInt}}"
+}
+
+{
+    "id": 73,
+    "order_id": 104,
+    "due_amount": "800.00",
+    "amount": "847.00",
+    "status": "Paid",
+    "payment_method": "Cash",
+    "transaction_id": "TXN367607",
+    "paid_at": "2025-12-23T08:14:14",
+    "created_at": "2025-12-23T13:59:14",
+    "updated_at": "2025-12-23T13:59:14"
+}
+
+GET /v1/payments?limit=10&offset=0 
+
+[
+    {
+        "id": 1,
+        "order_id": 2,
+        "due_amount": "90.00",
+        "amount": "90.00",
+        "status": "Paid",
+        "payment_method": null,
+        "transaction_id": null,
+        "paid_at": "2025-11-10T13:50:38",
+        "created_at": "2025-11-10T19:35:37",
+        "updated_at": "2025-11-10T19:35:37"
+    },
+    {
+        "id": 2,
+        "order_id": 3,
+        "due_amount": "90.00",
+        "amount": "90.00",
+        "status": "Paid",
+        "payment_method": null,
+        "transaction_id": null,
+        "paid_at": "2025-11-10T13:56:32",
+        "created_at": "2025-11-10T19:41:31",
+        "updated_at": "2025-11-10T19:41:31"
+    },
+    {
+        "id": 3,
+        "order_id": 4,
+        "due_amount": "90.00",
+        "amount": "90.00",
+        "status": "Paid",
+        "payment_method": null,
+        "transaction_id": null,
+        "paid_at": "2025-11-10T13:59:32",
+        "created_at": "2025-11-10T19:44:32",
+        "updated_at": "2025-11-10T19:44:32"
+    },
+    {
+        "id": 4,
+        "order_id": 5,
+        "due_amount": "90.00",
+        "amount": "90.00",
+        "status": "Paid",
+        "payment_method": null,
+        "transaction_id": null,
+        "paid_at": "2025-11-10T14:00:17",
+        "created_at": "2025-11-10T19:45:16",
+        "updated_at": "2025-11-10T19:45:16"
+    },
+    {
+        "id": 5,
+        "order_id": 6,
+        "due_amount": "275.00",
+        "amount": "150.00",
+        "status": "Partial",
+        "payment_method": "Cash",
+        "transaction_id": "TXN001",
+        "paid_at": null,
+        "created_at": "2025-11-10T19:49:58",
+        "updated_at": "2025-11-10T19:49:58"
+    },
+    {
+        "id": 6,
+        "order_id": 6,
+        "due_amount": "125.00",
+        "amount": "125.00",
+        "status": "Paid",
+        "payment_method": "Card",
+        "transaction_id": "TXN002",
+        "paid_at": "2025-11-10T14:05:00",
+        "created_at": "2025-11-10T19:49:59",
+        "updated_at": "2025-11-10T19:49:59"
+    },
+    {
+        "id": 7,
+        "order_id": 8,
+        "due_amount": "275.00",
+        "amount": "150.00",
+        "status": "Partial",
+        "payment_method": "Cash",
+        "transaction_id": "TXN001",
+        "paid_at": null,
+        "created_at": "2025-11-10T19:51:38",
+        "updated_at": "2025-11-10T19:51:38"
+    },
+    {
+        "id": 8,
+        "order_id": 8,
+        "due_amount": "125.00",
+        "amount": "125.00",
+        "status": "Paid",
+        "payment_method": "Card",
+        "transaction_id": "TXN002",
+        "paid_at": "2025-11-10T14:06:39",
+        "created_at": "2025-11-10T19:51:39",
+        "updated_at": "2025-11-10T19:51:39"
+    },
+    {
+        "id": 9,
+        "order_id": 10,
+        "due_amount": "275.00",
+        "amount": "150.00",
+        "status": "Partial",
+        "payment_method": "Cash",
+        "transaction_id": "TXN001",
+        "paid_at": null,
+        "created_at": "2025-11-10T19:52:13",
+        "updated_at": "2025-11-10T19:52:13"
+    },
+    {
+        "id": 10,
+        "order_id": 10,
+        "due_amount": "125.00",
+        "amount": "125.00",
+        "status": "Paid",
+        "payment_method": "Card",
+        "transaction_id": "TXN002",
+        "paid_at": "2025-11-10T14:07:15",
+        "created_at": "2025-11-10T19:52:14",
+        "updated_at": "2025-11-10T19:52:14"
+    }
+] 
+
+GET /v1/payments?status=Paid&limit=10&offset=0 
+[
+    {
+        "id": 1,
+        "order_id": 2,
+        "due_amount": "90.00",
+        "amount": "90.00",
+        "status": "Paid",
+        "payment_method": null,
+        "transaction_id": null,
+        "paid_at": "2025-11-10T13:50:38",
+        "created_at": "2025-11-10T19:35:37",
+        "updated_at": "2025-11-10T19:35:37"
+    },
+    {
+        "id": 2,
+        "order_id": 3,
+        "due_amount": "90.00",
+        "amount": "90.00",
+        "status": "Paid",
+        "payment_method": null,
+        "transaction_id": null,
+        "paid_at": "2025-11-10T13:56:32",
+        "created_at": "2025-11-10T19:41:31",
+        "updated_at": "2025-11-10T19:41:31"
+    },
+    {
+        "id": 3,
+        "order_id": 4,
+        "due_amount": "90.00",
+        "amount": "90.00",
+        "status": "Paid",
+        "payment_method": null,
+        "transaction_id": null,
+        "paid_at": "2025-11-10T13:59:32",
+        "created_at": "2025-11-10T19:44:32",
+        "updated_at": "2025-11-10T19:44:32"
+    },
+    {
+        "id": 4,
+        "order_id": 5,
+        "due_amount": "90.00",
+        "amount": "90.00",
+        "status": "Paid",
+        "payment_method": null,
+        "transaction_id": null,
+        "paid_at": "2025-11-10T14:00:17",
+        "created_at": "2025-11-10T19:45:16",
+        "updated_at": "2025-11-10T19:45:16"
+    },
+    {
+        "id": 6,
+        "order_id": 6,
+        "due_amount": "125.00",
+        "amount": "125.00",
+        "status": "Paid",
+        "payment_method": "Card",
+        "transaction_id": "TXN002",
+        "paid_at": "2025-11-10T14:05:00",
+        "created_at": "2025-11-10T19:49:59",
+        "updated_at": "2025-11-10T19:49:59"
+    },
+    {
+        "id": 8,
+        "order_id": 8,
+        "due_amount": "125.00",
+        "amount": "125.00",
+        "status": "Paid",
+        "payment_method": "Card",
+        "transaction_id": "TXN002",
+        "paid_at": "2025-11-10T14:06:39",
+        "created_at": "2025-11-10T19:51:39",
+        "updated_at": "2025-11-10T19:51:39"
+    },
+    {
+        "id": 10,
+        "order_id": 10,
+        "due_amount": "125.00",
+        "amount": "125.00",
+        "status": "Paid",
+        "payment_method": "Card",
+        "transaction_id": "TXN002",
+        "paid_at": "2025-11-10T14:07:15",
+        "created_at": "2025-11-10T19:52:14",
+        "updated_at": "2025-11-10T19:52:14"
+    },
+    {
+        "id": 12,
+        "order_id": 12,
+        "due_amount": "125.00",
+        "amount": "125.00",
+        "status": "Paid",
+        "payment_method": "Card",
+        "transaction_id": "TXN002",
+        "paid_at": "2025-11-10T14:07:36",
+        "created_at": "2025-11-10T19:52:36",
+        "updated_at": "2025-11-10T19:52:36"
+    },
+    {
+        "id": 14,
+        "order_id": 14,
+        "due_amount": "125.00",
+        "amount": "125.00",
+        "status": "Paid",
+        "payment_method": "Card",
+        "transaction_id": "TXN002",
+        "paid_at": "2025-11-10T14:08:07",
+        "created_at": "2025-11-10T19:53:07",
+        "updated_at": "2025-11-10T19:53:07"
+    },
+    {
+        "id": 16,
+        "order_id": 16,
+        "due_amount": "125.00",
+        "amount": "125.00",
+        "status": "Paid",
+        "payment_method": "Card",
+        "transaction_id": "TXN002",
+        "paid_at": "2025-11-10T14:08:28",
+        "created_at": "2025-11-10T19:53:27",
+        "updated_at": "2025-11-10T19:53:27"
+    }
+]
+
+GET v1/payments?order_id={{order_id}} 
+[
+    {
+        "id": 73,
+        "order_id": 104,
+        "due_amount": "800.00",
+        "amount": "847.00",
+        "status": "Paid",
+        "payment_method": "Cash",
+        "transaction_id": "TXN367607",
+        "paid_at": "2025-12-23T08:14:14",
+        "created_at": "2025-12-23T13:59:14",
+        "updated_at": "2025-12-23T13:59:14"
+    }
+]
+
+GET /v1/payments/{{payment_id}}
+{
+    "id": 73,
+    "order_id": 104,
+    "due_amount": "800.00",
+    "amount": "847.00",
+    "status": "Paid",
+    "payment_method": "Cash",
+    "transaction_id": "TXN367607",
+    "paid_at": "2025-12-23T08:14:14",
+    "created_at": "2025-12-23T13:59:14",
+    "updated_at": "2025-12-23T13:59:14"
+}
+
+PATCH /v1/payments/{{payment_id}} {
+    "status": "Paid",
+    "amount": "250.00"
+}
+
+DELETE /v1/payments/{{payment_id}} 
+
+
+RECEPTINIST
+
+Assign Order to Technician
+{
+    "order_id": {{order_id}},
+    "user_id": {{user_id}} ensure technician role
+}
+ v1/orders/assign {
+    "id": 28,
+    "order_id": 104,
+    "user_id": 2,
+    "assigned_at": "2025-12-23T14:09:16"
+}
+
+GET /v1/assigns?limit=10&offset=0
+[
+    {
+        "id": 5,
+        "order_id": 14,
+        "user_id": 3,
+        "assigned_at": "2025-11-10T19:53:04"
+    },
+    {
+        "id": 6,
+        "order_id": 16,
+        "user_id": 4,
+        "assigned_at": "2025-11-10T19:53:25"
+    },
+    {
+        "id": 7,
+        "order_id": 18,
+        "user_id": 5,
+        "assigned_at": "2025-11-10T19:53:46"
+    },
+    {
+        "id": 8,
+        "order_id": 20,
+        "user_id": 6,
+        "assigned_at": "2025-11-10T19:54:29"
+    },
+    {
+        "id": 9,
+        "order_id": 22,
+        "user_id": 7,
+        "assigned_at": "2025-11-10T20:13:57"
+    },
+    {
+        "id": 10,
+        "order_id": 24,
+        "user_id": 8,
+        "assigned_at": "2025-11-10T20:19:03"
+    },
+    {
+        "id": 11,
+        "order_id": 26,
+        "user_id": 9,
+        "assigned_at": "2025-11-10T20:20:37"
+    },
+    {
+        "id": 12,
+        "order_id": 27,
+        "user_id": 10,
+        "assigned_at": "2025-11-10T20:21:00"
+    },
+    {
+        "id": 13,
+        "order_id": 29,
+        "user_id": 11,
+        "assigned_at": "2025-11-10T20:21:20"
+    },
+    {
+        "id": 14,
+        "order_id": 30,
+        "user_id": 12,
+        "assigned_at": "2025-11-10T20:21:39"
+    }
+] 
+
+GET /v1/assigns?order_id={{order_id}} 
+[
+    {
+        "id": 28,
+        "order_id": 104,
+        "user_id": 2,
+        "assigned_at": "2025-12-23T14:09:16"
+    }
+] 
+
+GET /v1/assigns?user_id={{user_id}} 
+[
+    {
+        "id": 23,
+        "order_id": 47,
+        "user_id": 2,
+        "assigned_at": "2025-11-13T10:54:06"
+    },
+    {
+        "id": 28,
+        "order_id": 104,
+        "user_id": 2,
+        "assigned_at": "2025-12-23T14:09:16"
+    }
+] 
+
+CUSTOMER
+GET v1/orders?customer_id={{user_id}}&limit=10&offset=0
+[
+    {
+        "id": 42,
+        "device_id": 41,
+        "customer_id": 2,
+        "problem_id": null,
+        "cost": "250.00",
+        "discount": "10.00",
+        "total_cost": "240.00",
+        "note": "Repair completed successfully",
+        "status": "Completed",
+        "estimated_completion_date": null,
+        "completed_at": null,
+        "created_at": "2025-11-12T22:04:46",
+        "updated_at": "2025-11-12T22:04:49"
+    },
+    {
+        "id": 43,
+        "device_id": 41,
+        "customer_id": 2,
+        "problem_id": null,
+        "cost": "150.00",
+        "discount": "0.00",
+        "total_cost": "150.00",
+        "note": "Battery replacement",
+        "status": "Pending",
+        "estimated_completion_date": null,
+        "completed_at": null,
+        "created_at": "2025-11-12T22:04:47",
+        "updated_at": "2025-11-12T22:04:47"
+    },
+    {
+        "id": 44,
+        "device_id": 41,
+        "customer_id": 2,
+        "problem_id": null,
+        "cost": "300.00",
+        "discount": "25.00",
+        "total_cost": "275.00",
+        "note": "Keyboard repair",
+        "status": "Pending",
+        "estimated_completion_date": null,
+        "completed_at": null,
+        "created_at": "2025-11-12T22:04:47",
+        "updated_at": "2025-11-12T22:04:47"
+    },
+    {
+        "id": 46,
+        "device_id": 41,
+        "customer_id": 2,
+        "problem_id": null,
+        "cost": "350.00",
+        "discount": "25.00",
+        "total_cost": "325.00",
+        "note": "Complete workflow test",
+        "status": "Completed",
+        "estimated_completion_date": null,
+        "completed_at": null,
+        "created_at": "2025-11-12T22:04:57",
+        "updated_at": "2025-11-12T22:04:57"
+    },
+    {
+        "id": 47,
+        "device_id": 1,
+        "customer_id": 2,
+        "problem_id": null,
+        "cost": "996.00",
+        "discount": "265.00",
+        "total_cost": "731.00",
+        "note": "Repair completed. Screen replaced, full functionality tested. Device ready for pickup.",
+        "status": "Completed",
+        "estimated_completion_date": null,
+        "completed_at": "2025-11-17T12:03:33",
+        "created_at": "2025-11-13T10:53:29",
+        "updated_at": "2025-11-17T12:03:33"
+    },
+    {
+        "id": 48,
+        "device_id": 1,
+        "customer_id": 2,
+        "problem_id": null,
+        "cost": "299.99",
+        "discount": "0.00",
+        "total_cost": "299.99",
+        "note": "iPhone screen cracked",
+        "status": "Pending",
+        "estimated_completion_date": null,
+        "completed_at": null,
+        "created_at": "2025-11-17T11:19:44",
+        "updated_at": "2025-11-17T11:19:44"
+    },
+    {
+        "id": 49,
+        "device_id": 1,
+        "customer_id": 2,
+        "problem_id": null,
+        "cost": "189.99",
+        "discount": "0.00",
+        "total_cost": "189.99",
+        "note": "Samsung Galaxy back glass shattered",
+        "status": "Pending",
+        "estimated_completion_date": null,
+        "completed_at": null,
+        "created_at": "2025-11-17T11:19:44",
+        "updated_at": "2025-11-17T11:19:44"
+    },
+    {
+        "id": 50,
+        "device_id": 1,
+        "customer_id": 2,
+        "problem_id": null,
+        "cost": "129.99",
+        "discount": "0.00",
+        "total_cost": "129.99",
+        "note": "iPad won't charge",
+        "status": "Pending",
+        "estimated_completion_date": null,
+        "completed_at": null,
+        "created_at": "2025-11-17T11:19:44",
+        "updated_at": "2025-11-17T11:19:44"
+    },
+    {
+        "id": 51,
+        "device_id": 1,
+        "customer_id": 2,
+        "problem_id": null,
+        "cost": "449.99",
+        "discount": "0.00",
+        "total_cost": "449.99",
+        "note": "MacBook liquid spill",
+        "status": "Pending",
+        "estimated_completion_date": null,
+        "completed_at": null,
+        "created_at": "2025-11-17T11:19:44",
+        "updated_at": "2025-11-17T11:19:44"
+    },
+    {
+        "id": 92,
+        "device_id": 1,
+        "customer_id": 2,
+        "problem_id": null,
+        "cost": "299.99",
+        "discount": "0.00",
+        "total_cost": "299.99",
+        "note": "iPhone screen cracked",
+        "status": "Pending",
+        "estimated_completion_date": null,
+        "completed_at": null,
+        "created_at": "2025-11-17T11:54:13",
+        "updated_at": "2025-11-17T11:54:13"
+    }
+]
+
+GET /v1/orders/{{order_id}} {
+    "id": 104,
+    "device_id": 1,
+    "customer_id": 2,
+    "problem_id": null,
+    "cost": "655.00",
+    "discount": "398.00",
+    "total_cost": "257.00",
+    "note": "Work in progress",
+    "status": "Repairing",
+    "estimated_completion_date": null,
+    "completed_at": null,
+    "created_at": "2025-12-23T13:11:16",
+    "updated_at": "2025-12-23T13:14:18"
+}
+
+GET /v1/devices?limit=10&offset=0
+
+[
+    {
+        "id": 1,
+        "brand_id": 2,
+        "model_id": 1,
+        "device_type_id": 2,
+        "serial_number": "SN6531",
+        "owner_id": null,
+        "notes": null,
+        "created_at": "2025-11-10T19:35:36",
+        "updated_at": "2025-11-10T19:35:36"
+    },
+    {
+        "id": 2,
+        "brand_id": 3,
+        "model_id": 2,
+        "device_type_id": 3,
+        "serial_number": "SN1019",
+        "owner_id": null,
+        "notes": null,
+        "created_at": "2025-11-10T19:41:31",
+        "updated_at": "2025-11-10T19:41:31"
+    },
+    {
+        "id": 3,
+        "brand_id": 24,
+        "model_id": 3,
+        "device_type_id": 12,
+        "serial_number": "SN1478",
+        "owner_id": null,
+        "notes": null,
+        "created_at": "2025-11-10T19:44:31",
+        "updated_at": "2025-11-10T19:44:31"
+    },
+    {
+        "id": 4,
+        "brand_id": 35,
+        "model_id": 4,
+        "device_type_id": 17,
+        "serial_number": "SN5850",
+        "owner_id": null,
+        "notes": null,
+        "created_at": "2025-11-10T19:45:15",
+        "updated_at": "2025-11-10T19:45:15"
+    },
+    {
+        "id": 5,
+        "brand_id": 1,
+        "model_id": 1,
+        "device_type_id": 1,
+        "serial_number": "LAPTOP001",
+        "owner_id": null,
+        "notes": "Screen cracked, needs replacement",
+        "created_at": "2025-11-10T19:49:56",
+        "updated_at": "2025-11-10T19:49:56"
+    },
+    {
+        "id": 6,
+        "brand_id": 2,
+        "model_id": 1,
+        "device_type_id": 1,
+        "serial_number": "LAPTOP002",
+        "owner_id": null,
+        "notes": "Keyboard not working",
+        "created_at": "2025-11-10T19:50:00",
+        "updated_at": "2025-11-10T19:50:00"
+    },
+    {
+        "id": 7,
+        "brand_id": 1,
+        "model_id": 1,
+        "device_type_id": 1,
+        "serial_number": "LAPTOP96524",
+        "owner_id": null,
+        "notes": "Screen cracked, needs replacement",
+        "created_at": "2025-11-10T19:51:36",
+        "updated_at": "2025-11-10T19:51:36"
+    },
+    {
+        "id": 8,
+        "brand_id": 1,
+        "model_id": 1,
+        "device_type_id": 1,
+        "serial_number": "LAPTOP99631",
+        "owner_id": null,
+        "notes": "Keyboard not working",
+        "created_at": "2025-11-10T19:51:39",
+        "updated_at": "2025-11-10T19:51:39"
+    },
+    {
+        "id": 9,
+        "brand_id": 1,
+        "model_id": 1,
+        "device_type_id": 1,
+        "serial_number": "LAPTOP31350",
+        "owner_id": null,
+        "notes": "Screen cracked, needs replacement",
+        "created_at": "2025-11-10T19:52:11",
+        "updated_at": "2025-11-10T19:52:11"
+    },
+    {
+        "id": 10,
+        "brand_id": 1,
+        "model_id": 1,
+        "device_type_id": 1,
+        "serial_number": "LAPTOP35061",
+        "owner_id": null,
+        "notes": "Keyboard not working",
+        "created_at": "2025-11-10T19:52:15",
+        "updated_at": "2025-11-10T19:52:15"
+    }
+]

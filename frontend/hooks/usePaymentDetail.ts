@@ -1,7 +1,17 @@
+/**
+ * Payment Detail Hook
+ * Fetches a single payment by ID
+ */
+
+"use client"
 import { useEffect, useState } from "react"
-import { apiJson } from "@/lib/api"
+import { api } from "@/lib/api-client"
+import { API_ENDPOINTS } from "@/config/api.config"
 import type { Payment } from "./usePayments"
 
+/**
+ * Fetch single payment by ID
+ */
 export function usePaymentDetail(id: number) {
   const [data, setData] = useState<Payment | null>(null)
   const [loading, setLoading] = useState(false)
@@ -9,22 +19,32 @@ export function usePaymentDetail(id: number) {
 
   useEffect(() => {
     if (!id) return
+
     let cancelled = false
-    async function run() {
+
+    async function fetchPayment() {
       setLoading(true)
       setError(null)
       try {
-        const res = await apiJson<Payment>(`/payments/${id}`)
-        if (!cancelled) setData(res)
-      } catch (e) {
+        const res = await api.get<Payment>(API_ENDPOINTS.PAYMENTS.DETAIL(id))
+        if (!cancelled) {
+          setData(res)
+        }
+      } catch (err) {
         const message =
-          e instanceof Error ? e.message : "Failed to load payment"
-        if (!cancelled) setError(message)
+          err instanceof Error ? err.message : "Failed to load payment"
+        if (!cancelled) {
+          setError(message)
+        }
       } finally {
-        if (!cancelled) setLoading(false)
+        if (!cancelled) {
+          setLoading(false)
+        }
       }
     }
-    run()
+
+    fetchPayment()
+
     return () => {
       cancelled = true
     }
