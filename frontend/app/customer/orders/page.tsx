@@ -102,8 +102,8 @@ export default function CustomerOrdersPage() {
             columns={columns}
             loading={loading}
             emptyMessage="No orders found"
-            searchableFields={["id", "status", "note"]}
-            onView={(order) => router.push(`/customer/orders/${order.id}`)}
+            searchableFields={["order_id", "status", "device_name", "problem_name"]}
+            onView={(order) => router.push(`/customer/orders/${order.order_id}`)}
           />
         </div>
       </SidebarInset>

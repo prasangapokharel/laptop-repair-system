@@ -42,7 +42,7 @@ export function PaymentForm({ onSuccess, onError }: PaymentFormProps) {
 
   // Get selected order
   const selectedOrder = useMemo(() => {
-    return orders.find((o) => o.id === orderId)
+    return orders.find((o) => o.order_id === orderId)
   }, [orderId, orders])
 
   // Auto-calculate due amount when amount changes
@@ -61,7 +61,7 @@ export function PaymentForm({ onSuccess, onError }: PaymentFormProps) {
   // Auto-populate due amount when order is selected
   const handleOrderSelect = (id: number) => {
     setOrderId(id)
-    const order = orders.find((o) => o.id === id)
+    const order = orders.find((o) => o.order_id === id)
     if (order) {
       setDueAmount(String(order.total_cost || 0))
       setAmount("")
@@ -118,9 +118,9 @@ export function PaymentForm({ onSuccess, onError }: PaymentFormProps) {
             >
               {orderId
                 ? (() => {
-                    const order = orders.find((o) => o.id === orderId)
+                    const order = orders.find((o) => o.order_id === orderId)
                     if (!order) return "Select order..."
-                    return `Order #${order.id} - रु ${order.total_cost}`
+                    return `Order #${order.order_id} - रु ${order.total_cost}`
                   })()
                 : "Select order..."}
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -134,17 +134,17 @@ export function PaymentForm({ onSuccess, onError }: PaymentFormProps) {
                 <CommandGroup>
                   {orders.map((order) => (
                     <CommandItem
-                      key={order.id}
-                      value={`${order.id} Order ${order.id} ${order.total_cost}`}
-                      onSelect={() => handleOrderSelect(order.id)}
+                      key={order.order_id}
+                      value={`${order.order_id} Order ${order.order_id} ${order.total_cost}`}
+                      onSelect={() => handleOrderSelect(order.order_id)}
                     >
                       <Check
                         className={cn(
                           "mr-2 h-4 w-4",
-                          orderId === order.id ? "opacity-100" : "opacity-0"
+                          orderId === order.order_id ? "opacity-100" : "opacity-0"
                         )}
                       />
-                      Order #{order.id} - रु {order.total_cost}
+                      Order #{order.order_id} - रु {order.total_cost}
                     </CommandItem>
                   ))}
                 </CommandGroup>
