@@ -14,10 +14,11 @@ import { Edit, Eye, Trash2, Plus, ClipboardList } from "lucide-react"
 import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog"
 import { Breadcrumb } from "@/components/breadcrumb"
 
-interface Order {
-  id: number
-  device_id: number
-  problem?: { id: number; name: string }
+interface OrderDisplay {
+  order_id: number
+  customer_name: string | null
+  device_name: string | null
+  problem_name: string | null
   status: string
   cost: string
   discount: string
@@ -36,24 +37,42 @@ export default function ReceptionistOrdersPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [deleteOrderId, setDeleteOrderId] = useState<number | null>(null)
 
-  const columns: ColumnDef<Order>[] = [
+  const displayData = data.map((order) => ({
+    order_id: order.order_id,
+    customer_name: order.customer_name || "—",
+    device_name: order.device_name || "—",
+    problem_name: order.problem_name || "—",
+    status: order.status,
+    cost: order.cost,
+    discount: order.discount,
+    total_cost: order.total_cost,
+    created_at: order.created_at,
+  }))
+
+  const columns: ColumnDef<OrderDisplay>[] = [
     {
-      key: "id",
+      key: "order_id",
       header: "Order ID",
-      render: (order) => <span className="font-semibold text-sm">#{order.id}</span>,
+      render: (order) => <span className="font-semibold text-sm">#{order.order_id}</span>,
       sortable: true,
     },
     {
-      key: "device_id",
-      header: "Device ID",
-      render: (order) => <span className="font-mono text-sm">#{order.device_id}</span>,
+      key: "customer_name",
+      header: "Customer",
+      render: (order) => <span className="text-sm">{order.customer_name}</span>,
       sortable: true,
     },
     {
-      key: "problem",
+      key: "device_name",
+      header: "Device",
+      render: (order) => <span className="text-sm">{order.device_name}</span>,
+      sortable: true,
+    },
+    {
+      key: "problem_name",
       header: "Problem",
-      render: (order) => <span className="text-sm">{order.problem?.name || "N/A"}</span>,
-      sortable: false,
+      render: (order) => <span className="text-sm">{order.problem_name}</span>,
+      sortable: true,
     },
     {
       key: "status",
@@ -101,8 +120,8 @@ export default function ReceptionistOrdersPage() {
     },
   ]
 
-  const handleDeleteOrder = async (order: Order) => {
-    setDeleteOrderId(order.id)
+  const handleDeleteOrder = async (order: OrderDisplay) => {
+    setDeleteOrderId(order.order_id)
     setDeleteDialogOpen(true)
   }
 
@@ -149,16 +168,16 @@ export default function ReceptionistOrdersPage() {
             </Button>
           </div>
 
-          <TableList<Order>
+          <TableList<OrderDisplay>
             title="All Orders"
             description="Browse and manage all customer service orders with status, cost, and details"
-            data={data}
+            data={displayData}
             columns={columns}
             loading={loading}
             emptyMessage="No orders found in the system"
-            searchableFields={["id", "device_id", "status"]}
-            onView={(order) => router.push(`/receptionist/orders/${order.id}`)}
-            onEdit={(order) => router.push(`/receptionist/orders/${order.id}/edit`)}
+            searchableFields={["order_id", "device_name", "problem_name", "status"]}
+            onView={(order) => router.push(`/receptionist/orders/${order.order_id}`)}
+            onEdit={(order) => router.push(`/receptionist/orders/${order.order_id}/edit`)}
             onDelete={handleDeleteOrder}
           />
         </div>

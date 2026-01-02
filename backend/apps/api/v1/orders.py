@@ -100,7 +100,9 @@ async def list_orders(
         # Get device name
         device_result = db.execute(select(Device).where(Device.id == order.device_id))
         device = device_result.scalar_one_or_none()
-        device_name = device.model if device else None
+        device_name = None
+        if device and device.model:
+            device_name = f"{device.brand.name} {device.model.name}" if device.brand else device.model.name
         
         # Get customer name
         customer_name = None

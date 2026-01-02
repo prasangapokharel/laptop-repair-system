@@ -38,17 +38,8 @@ export default function AdminOrdersPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [deleteOrderId, setDeleteOrderId] = useState<number | null>(null)
 
-  const displayData = data.map((order) => ({
-    order_id: order.order_id,
-    customer_name: order.customer_name || "—",
-    device_name: order.device_name || "—",
-    problem_name: order.problem_name || "—",
-    status: order.status,
-    cost: order.cost,
-    discount: order.discount,
-    total_cost: order.total_cost,
-    created_at: order.created_at,
-  }))
+  // No mapping needed anymore - API returns correct format
+  const displayData: OrderDisplay[] = data
 
   const columns: ColumnDef<OrderDisplay>[] = [
     {

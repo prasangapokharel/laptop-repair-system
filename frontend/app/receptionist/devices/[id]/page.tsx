@@ -30,19 +30,25 @@ export default function ReceptionistDeviceDetailPage() {
     offset,
   })
 
-  // Filter orders for this device
-  const deviceOrders = orders.filter((order: any) => order.device_id === id)
+  // Note: All orders shown since device_id is no longer in API response
+  // To properly filter, we'd need to update the backend API
+  const deviceOrders = orders
 
   const columns = [
     {
-      key: "id",
+      key: "order_id",
       header: "Order ID",
-      render: (order: Order) => <span className="font-semibold text-sm">#{order.id}</span>,
+      render: (order: Order) => <span className="font-semibold text-sm">#{order.order_id}</span>,
     },
     {
-      key: "problem",
+      key: "device_name",
+      header: "Device",
+      render: (order: Order) => <span className="text-sm">{order.device_name || "N/A"}</span>,
+    },
+    {
+      key: "problem_name",
       header: "Problem",
-      render: (order: Order) => <span className="text-sm">{order.problem?.name || "N/A"}</span>,
+      render: (order: Order) => <span className="text-sm">{order.problem_name || "N/A"}</span>,
     },
     {
       key: "status",

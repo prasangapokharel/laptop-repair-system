@@ -19,9 +19,21 @@ export default function CustomerOrdersPage() {
 
   const columns: ColumnDef<Order>[] = [
     {
-      key: "id",
+      key: "order_id",
       header: "Order ID",
-      render: (order) => `#${order.id}`,
+      render: (order) => `#${order.order_id}`,
+      sortable: true,
+    },
+    {
+      key: "device_name",
+      header: "Device",
+      render: (order) => order.device_name || "N/A",
+      sortable: true,
+    },
+    {
+      key: "problem_name",
+      header: "Problem",
+      render: (order) => order.problem_name || "N/A",
       sortable: true,
     },
     {
@@ -30,11 +42,13 @@ export default function CustomerOrdersPage() {
       render: (order) => (
         <Badge
           variant={
-            order.status === "completed"
+            order.status === "Completed"
               ? "default"
-              : order.status === "pending"
+              : order.status === "Pending"
                 ? "secondary"
-                : "destructive"
+                : order.status === "In Progress"
+                  ? "default"
+                  : "destructive"
           }
         >
           {order.status}

@@ -144,10 +144,10 @@ export default function ReceptionistDashboardPage() {
                 ) : (
                   <div className="space-y-2 max-h-96 overflow-y-auto">
                     {orders.map((order) => (
-                      <div key={order.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors">
+                      <div key={order.order_id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors">
                         <div className="min-w-0 flex-1">
-                          <p className="font-medium text-sm">Order #{order.id}</p>
-                          <p className="text-xs text-muted-foreground">{order.problem?.name || "N/A"}</p>
+                          <p className="font-medium text-sm">Order #{order.order_id}</p>
+                          <p className="text-xs text-muted-foreground">{order.problem_name || "N/A"}</p>
                         </div>
                         <div className="flex items-center gap-3">
                           <Badge variant={

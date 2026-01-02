@@ -28,16 +28,18 @@ export default function CustomerDashboardPage() {
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {data.slice(0, 6).map((order) => (
                 <div
-                  key={order.id}
+                  key={order.order_id}
                   className="rounded-lg border p-4 bg-card shadow-sm"
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">
-                      Order #{order.id}
+                      Order #{order.order_id}
                     </span>
                     <span className="text-xs">{order.status}</span>
                   </div>
                   <div className="mt-2 text-sm">
+                    <p>Device: {order.device_name || "N/A"}</p>
+                    <p>Problem: {order.problem_name || "N/A"}</p>
                     <p>Total: {order.total_cost}</p>
                     <p>Cost: {order.cost}</p>
                     <p>Discount: {order.discount}</p>

@@ -33,9 +33,19 @@ export default function ReceptionistCustomerDetailPage() {
 
   const columns = [
     {
-      key: "id",
+      key: "order_id",
       header: "Order ID",
-      render: (order: Order) => <span className="font-mono text-sm">#{order.id}</span>,
+      render: (order: Order) => <span className="font-mono text-sm">#{order.order_id}</span>,
+    },
+    {
+      key: "device_name",
+      header: "Device",
+      render: (order: Order) => <span className="text-sm">{order.device_name || "N/A"}</span>,
+    },
+    {
+      key: "problem_name",
+      header: "Problem",
+      render: (order: Order) => <span className="text-sm">{order.problem_name || "N/A"}</span>,
     },
     {
       key: "status",

@@ -14,22 +14,18 @@ import {
 } from "@/hooks/useApi"
 
 export interface Order {
-  id: number
-  device_id: number
-  customer_id: number | null
-  problem_id: number | null
+  order_id: number
+  customer_name: string | null
+  device_name: string | null
+  problem_name: string | null
   cost: string
   discount: string
   total_cost: string
-  note: string | null
   status: string
   estimated_completion_date: string | null
   completed_at: string | null
   created_at: string
-  problem?: {
-    id: number
-    name: string
-  }
+  updated_at: string
 }
 
 interface OrderListResponse {

@@ -71,8 +71,8 @@ export default function AdminAddAssignmentPage() {
                         </SelectTrigger>
                         <SelectContent>
                           {orders.map((order) => (
-                            <SelectItem key={order.id} value={String(order.id)}>
-                              Order #{order.id} - Device #{order.device_id}
+                            <SelectItem key={order.order_id} value={String(order.order_id)}>
+                              Order #{order.order_id} - {order.device_name || `Device #${order.order_id}`}
                             </SelectItem>
                           ))}
                         </SelectContent>
