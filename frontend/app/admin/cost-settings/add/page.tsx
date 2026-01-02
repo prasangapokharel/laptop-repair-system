@@ -16,8 +16,8 @@ import { Breadcrumb } from "@/components/breadcrumb"
 
 export default function AdminAddCostSettingPage() {
   const router = useRouter()
-  const { data: deviceTypes } = useDeviceTypes()
-  const { data: problems } = useProblems(100, 0)
+  const { data: deviceTypes = [] } = useDeviceTypes()
+  const { data: problems = [] } = useProblems(100, 0)
 
   const [formData, setFormData] = useState({
     device_type_id: "",

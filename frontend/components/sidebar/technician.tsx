@@ -29,7 +29,18 @@ const data = {
   navMain: [
     { title: "Dashboard", url: "/technician/dashboard", icon: IconDashboard },
     { title: "Orders", url: "/technician/orders", icon: IconClipboardList },
-    { title: "Devices", url: "/technician/devices", icon: IconDevices },
+    {
+      title: "Devices",
+      url: "/technician/devices",
+      icon: IconDevices,
+      items: [
+        { title: "View Devices", url: "/technician/devices" },
+        { title: "Device Types", url: "/technician/devices/types" },
+        { title: "Brands", url: "/technician/devices/brands" },
+        { title: "Models", url: "/technician/devices/models" },
+        { title: "Problems", url: "/technician/devices/problems" },
+      ],
+    },
   ],
   documents: [],
   navSecondary: [

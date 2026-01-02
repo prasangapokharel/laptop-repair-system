@@ -48,6 +48,26 @@ class OrderResponse(BaseModel):
         from_attributes = True
 
 
+class OrderListItemResponse(BaseModel):
+    """Enhanced order response for list view with related names instead of IDs"""
+    order_id: int
+    customer_name: Optional[str]
+    device_name: Optional[str]
+    problem_name: Optional[str]
+    cost: Decimal
+    discount: Decimal
+    total_cost: Decimal
+    note: Optional[str]
+    status: str
+    estimated_completion_date: Optional[datetime]
+    completed_at: Optional[datetime]
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
 class OrderStatusHistoryResponse(BaseModel):
     id: int
     order_id: int
@@ -80,3 +100,30 @@ class OrderAssignResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class OrderListItemResponse(BaseModel):
+    """Response model for orders in list view with names instead of IDs"""
+    order_id: int
+    customer_name: Optional[str]
+    device_name: Optional[str]
+    problem_name: Optional[str]
+    cost: Decimal
+    discount: Decimal
+    total_cost: Decimal
+    note: Optional[str]
+    status: str
+    estimated_completion_date: Optional[datetime]
+    completed_at: Optional[datetime]
+    created_at: datetime
+    updated_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+
+class OrderListResponseNew(BaseModel):
+    items: List[OrderListItemResponse]
+    total: int
+    page: int
+    limit: int

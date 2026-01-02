@@ -1,5 +1,5 @@
 "use client"
-import { useEffect, useMemo } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useAuth } from "@/hooks/useAuth"
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
@@ -38,24 +38,32 @@ export function SiteHeader({ title }: { title?: string }) {
 
   const computedTitle = useMemo(() => {
     if (title) return title
-    if (typeof window === "undefined") return "Dashboard"
+    // Default to dashboard - title will update via useEffect with router info
+    return "Dashboard"
+  }, [title])
+
+  const [pageTitle, setPageTitle] = useState("Dashboard")
+
+  useEffect(() => {
     const path = window.location.pathname
-    // Try to derive a sensible title from the path
-    // Prefer last non-empty segment; special-case common admin routes
     const segments = path.split("/").filter(Boolean)
     const last = segments[segments.length - 1] || "dashboard"
-    if (last === "dashboard") return "Dashboard"
-    if (path.includes("/devices/types")) return "Device Types"
-    if (path.includes("/devices/brands")) return "Brands"
-    if (path.includes("/devices/models")) return "Models"
-    return toTitleCase(last)
-  }, [title])
+    
+    let newTitle = "Dashboard"
+    if (last === "dashboard") newTitle = "Dashboard"
+    else if (path.includes("/devices/types")) newTitle = "Device Types"
+    else if (path.includes("/devices/brands")) newTitle = "Brands"
+    else if (path.includes("/devices/models")) newTitle = "Models"
+    else newTitle = toTitleCase(last)
+    
+    setPageTitle(title || newTitle)
+  }, [])
 
   useEffect(() => {
     if (typeof document !== "undefined") {
-      document.title = `${computedTitle} • Laptop Admin`
+      document.title = `${pageTitle} • Laptop Admin`
     }
-  }, [computedTitle])
+  }, [pageTitle])
 
   return (
     <header className="flex h-(--header-height) shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
@@ -65,7 +73,7 @@ export function SiteHeader({ title }: { title?: string }) {
           orientation="vertical"
           className="mx-2 data-[orientation=vertical]:h-4"
         />
-        <h1 className="text-base font-medium">{computedTitle}</h1>
+         <h1 className="text-base font-medium">{pageTitle}</h1>
         <div className="ml-auto flex items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger className="outline-none">

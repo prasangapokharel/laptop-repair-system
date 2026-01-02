@@ -12,6 +12,7 @@ import { useDeviceBrands } from "@/hooks/useDeviceBrands"
 import { useDeviceTypes } from "@/hooks/useDeviceTypes"
 import { useState } from "react"
 import { apiJson } from "@/lib/api"
+import { Trash2 } from "lucide-react"
 
 export default function TechnicianDeviceModelsPage() {
   const { data: models = [] } = useDeviceModels()
@@ -24,6 +25,19 @@ export default function TechnicianDeviceModelsPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
+
+  async function handleDelete(modelId: number) {
+    if (!confirm("Are you sure you want to delete this model?")) return
+    
+    try {
+      await apiJson(`/devices/models/${modelId}`, {
+        method: "DELETE",
+      })
+      window.location.reload()
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to delete model")
+    }
+  }
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault()
@@ -131,21 +145,33 @@ export default function TechnicianDeviceModelsPage() {
             </Card>
           )}
 
-          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-            {models.map((model) => (
-              <Card key={model.id}>
-                <CardContent className="p-6">
-                  <h3 className="font-semibold text-lg">{model.name}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Brand: {brands.find((b) => b.id === model.brand_id)?.name || `#${model.brand_id}`}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Type: {types.find((t) => t.id === model.device_type_id)?.name || `#${model.device_type_id}`}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-2">ID: {model.id}</p>
-                </CardContent>
-              </Card>
-            ))}
+           <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+             {models.map((model) => (
+               <Card key={model.id}>
+                 <CardContent className="p-6">
+                   <div className="flex justify-between items-start">
+                     <div>
+                       <h3 className="font-semibold text-lg">{model.name}</h3>
+                       <p className="text-sm text-muted-foreground">
+                         Brand: {brands.find((b) => b.id === model.brand_id)?.name || `#${model.brand_id}`}
+                       </p>
+                       <p className="text-sm text-muted-foreground">
+                         Type: {types.find((t) => t.id === model.device_type_id)?.name || `#${model.device_type_id}`}
+                       </p>
+                       <p className="text-xs text-gray-500 mt-2">ID: {model.id}</p>
+                     </div>
+                     <Button
+                       variant="ghost"
+                       size="sm"
+                       onClick={() => handleDelete(model.id)}
+                       className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                     >
+                       <Trash2 className="h-4 w-4" />
+                     </Button>
+                   </div>
+                 </CardContent>
+               </Card>
+             ))}
             {models.length === 0 && !showForm && (
               <Card>
                 <CardContent className="p-6 text-center text-muted-foreground col-span-full">

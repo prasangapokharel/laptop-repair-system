@@ -7,10 +7,9 @@ from decimal import Decimal
 from db import get_db
 from models.order import Order, OrderAssign, OrderStatusHistory
 from models.problem import Problem
-from models.device import Device
-from models.user import User
-from schemas.order import OrderCreate, OrderResponse, OrderUpdate, OrderAssignCreate, OrderAssignResponse, OrderListResponse, OrderStatusHistoryResponse, OrderListItemResponse
+from schemas.order import OrderCreate, OrderResponse, OrderUpdate, OrderAssignCreate, OrderAssignResponse, OrderListResponse, OrderStatusHistoryResponse
 from utils.dependencies import get_current_user, require_admin, require_staff_or_customer, require_admin_or_receptionist, require_admin_or_technician
+from models.user import User
 
 router = APIRouter(prefix="/orders", tags=["orders"])
 
@@ -79,7 +78,7 @@ async def list_orders(
     count_result = db.execute(count_query)
     total = count_result.scalar()
 
-    # Query with joins to get names
+    # Query for items
     query = select(Order).options(
         selectinload(Order.problem).selectinload(Problem.device_type)
     )
@@ -92,46 +91,7 @@ async def list_orders(
     
     query = query.limit(limit).offset(offset)
     result = db.execute(query)
-    orders = result.scalars().all()
-    
-    # Transform orders to include names
-    items = []
-    for order in orders:
-        # Get device name
-        device_result = db.execute(select(Device).where(Device.id == order.device_id))
-        device = device_result.scalar_one_or_none()
-        device_name = device.model if device else None
-        
-        # Get customer name
-        customer_name = None
-        if order.customer_id:
-            customer_result = db.execute(select(User).where(User.id == order.customer_id))
-            customer = customer_result.scalar_one_or_none()
-            customer_name = customer.full_name if customer else None
-        
-        # Get problem name
-        problem_name = None
-        if order.problem_id:
-            problem_result = db.execute(select(Problem).where(Problem.id == order.problem_id))
-            problem = problem_result.scalar_one_or_none()
-            problem_name = problem.name if problem else None
-        
-        item = OrderListItemResponse(
-            order_id=order.id,
-            customer_name=customer_name,
-            device_name=device_name,
-            problem_name=problem_name,
-            cost=order.cost,
-            discount=order.discount,
-            total_cost=order.total_cost,
-            note=order.note,
-            status=order.status,
-            estimated_completion_date=order.estimated_completion_date,
-            completed_at=order.completed_at,
-            created_at=order.created_at,
-            updated_at=order.updated_at
-        )
-        items.append(item)
+    items = result.scalars().all()
     
     return {
         "items": items,

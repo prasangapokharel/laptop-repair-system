@@ -1,26 +1,95 @@
 "use client";
-import { AccountantSidebar } from "@/components/sidebar/accountant"
-import { SiteHeader } from "@/components/site-header"
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
-import { Separator } from "@/components/ui/separator"
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
-import { usePayments } from "@/hooks/usePayments"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useState } from "react"
-import { usePaymentMutations } from "@/hooks/usePaymentMutations"
-import { useRouter } from "next/navigation"
+import { AccountantSidebar } from "@/components/sidebar/accountant";
+import { SiteHeader } from "@/components/site-header";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { usePayments, type Payment } from "@/hooks/usePayments";
+import { usePaymentMutations } from "@/hooks/usePaymentMutations";
+import { useRouter } from "next/navigation";
+import { TableList, ColumnDef } from "@/components/tables/table-list";
+import { Badge } from "@/components/ui/badge";
+import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog";
+import { useState } from "react";
 
 export default function AccountantPaymentsPage() {
-  const [status, setStatus] = useState<string | undefined>(undefined)
-  const [orderIdFilter, setOrderIdFilter] = useState<number | undefined>(undefined)
-  const { data, loading, error } = usePayments({
-    status,
-    order_id: orderIdFilter,
-  })
-  const { deletePayment } = usePaymentMutations()
-  const router = useRouter()
+  const { data, loading } = usePayments({ limit: 15, offset: 0 });
+  const { deletePayment } = usePaymentMutations();
+  const router = useRouter();
+  const [deleteId, setDeleteId] = useState<number | null>(null);
+
+  const columns: ColumnDef<Payment>[] = [
+    {
+      key: "id",
+      header: "Payment ID",
+      render: (payment) => `#${payment.id}`,
+      sortable: true,
+    },
+    {
+      key: "order_id",
+      header: "Order ID",
+      render: (payment) => `#${payment.order_id}`,
+      sortable: true,
+    },
+    {
+      key: "due_amount",
+      header: "Due Amount",
+      render: (payment) => `रु ${payment.due_amount}`,
+      sortable: true,
+    },
+    {
+      key: "amount",
+      header: "Amount Paid",
+      render: (payment) => `रु ${payment.amount}`,
+      sortable: true,
+    },
+    {
+      key: "status",
+      header: "Status",
+      render: (payment) => (
+        <Badge
+          variant={
+            payment.status === "Paid"
+              ? "default"
+              : payment.status === "Partial"
+                ? "secondary"
+                : "destructive"
+          }
+        >
+          {payment.status}
+        </Badge>
+      ),
+      sortable: true,
+    },
+    {
+      key: "payment_method",
+      header: "Method",
+      render: (payment) => payment.payment_method ?? "N/A",
+      sortable: true,
+    },
+    {
+      key: "transaction_id",
+      header: "Transaction ID",
+      render: (payment) => payment.transaction_id ?? "N/A",
+      sortable: false,
+    },
+    {
+      key: "paid_at",
+      header: "Paid At",
+      render: (payment) => payment.paid_at ?? "N/A",
+      sortable: true,
+    },
+  ];
+
+  const handleDelete = async (payment: Payment) => {
+    try {
+      await deletePayment(payment.id);
+      setDeleteId(null);
+      router.refresh();
+    } catch (error) {
+      console.error("Failed to delete payment:", error);
+    }
+  };
 
   return (
     <SidebarProvider>
@@ -28,85 +97,49 @@ export default function AccountantPaymentsPage() {
       <SidebarInset>
         <SiteHeader />
         <div className="px-6 py-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold">Payments</h2>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-2xl font-bold">Payments</h1>
+              <p className="text-sm text-muted-foreground">
+                Manage payment records and track payment status
+              </p>
+            </div>
             <Button asChild>
               <Link href="/accountant/payments/add">Add Payment</Link>
             </Button>
           </div>
-          <Separator className="my-4" />
-          <div className="flex gap-3 items-end">
-            <div className="w-48">
-              <label className="text-sm">Status</label>
-              <Select onValueChange={(v) => setStatus(v === "all" ? undefined : v)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All</SelectItem>
-                  <SelectItem value="Paid">Paid</SelectItem>
-                  <SelectItem value="Partial">Partial</SelectItem>
-                  <SelectItem value="Pending">Pending</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="w-48">
-              <label className="text-sm">Order ID</label>
-              <Input
-                type="number"
-                value={orderIdFilter ?? ""}
-                onChange={(e) =>
-                  setOrderIdFilter(e.target.value ? Number(e.target.value) : undefined)
-                }
-                placeholder="e.g., 104"
-              />
-            </div>
-          </div>
-          <Separator className="my-4" />
-          {loading && <p>Loading payments...</p>}
-          {error && <p className="text-red-500">{error}</p>}
-          {!loading && !error && (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {data.map((p) => (
-                <div key={p.id} className="rounded-lg border p-4 bg-card shadow-sm">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">
-                      Payment #{p.id} • Order #{p.order_id}
-                    </span>
-                    <span className="text-xs">{p.status}</span>
-                  </div>
-                  <div className="mt-2 text-sm">
-                    <p>Due: रु {p.due_amount}</p>
-                    <p>Amount: रु {p.amount}</p>
-                    <p>Method: {p.payment_method ?? "N/A"}</p>
-                    <p>Txn: {p.transaction_id ?? "N/A"}</p>
-                    <p>Paid At: {p.paid_at ?? "N/A"}</p>
-                  </div>
-                  <div className="mt-3">
-                    <Button variant="outline" asChild>
-                      <Link href={`/accountant/payments/${p.id}`}>View</Link>
-                    </Button>
-                    <Button variant="outline" className="ml-2" asChild>
-                      <Link href={`/accountant/payments/${p.id}/edit`}>Edit</Link>
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      className="ml-2"
-                      onClick={async () => {
-                        await deletePayment(p.id)
-                        router.refresh()
-                      }}
-                    >
-                      Delete
-                    </Button>
-                  </div>
-                </div>
-              ))}
-              {data.length === 0 && <p>No payments found</p>}
-            </div>
-          )}
+
+          <TableList<Payment>
+            title="Payment Records"
+            description="View and manage all payment transactions"
+            data={data}
+            columns={columns}
+            loading={loading}
+            emptyMessage="No payments found"
+            searchableFields={["id", "order_id", "status", "payment_method"]}
+            onView={(payment) =>
+              router.push(`/accountant/payments/${payment.id}`)
+            }
+            onEdit={(payment) =>
+              router.push(`/accountant/payments/${payment.id}/edit`)
+            }
+            onDelete={(payment) => setDeleteId(payment.id)}
+          />
+
+          <DeleteConfirmationDialog
+            open={deleteId !== null}
+            onOpenChange={(open) => {
+              if (!open) setDeleteId(null);
+            }}
+            title="Delete Payment"
+            description="Are you sure you want to delete this payment record? This action cannot be undone."
+            onConfirm={async () => {
+              const payment = data.find((p) => p.id === deleteId);
+              if (payment) await handleDelete(payment);
+            }}
+          />
         </div>
       </SidebarInset>
     </SidebarProvider>
-  )
+  );
 }

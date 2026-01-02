@@ -77,7 +77,7 @@ export const TableList = <T extends Record<string, any>>({
   }, [data, searchTerm, searchableFields])
 
   const sortedData = useMemo(() => {
-    if (!sortConfig.key) return filteredData
+    if (!sortConfig.key || !filteredData) return filteredData || []
     const sorted = [...filteredData].sort((a, b) => {
       const aVal = a[sortConfig.key!]
       const bVal = b[sortConfig.key!]
@@ -89,7 +89,7 @@ export const TableList = <T extends Record<string, any>>({
     return sorted
   }, [filteredData, sortConfig])
 
-  const totalPages = Math.ceil(sortedData.length / itemsPerPage)
+  const totalPages = Math.ceil((sortedData?.length || 0) / itemsPerPage)
   const paginatedData = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage
     return sortedData.slice(start, start + itemsPerPage)

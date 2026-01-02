@@ -6,60 +6,51 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useProblems } from "@/hooks/useProblems"
 import { useDeviceTypes } from "@/hooks/useDeviceTypes"
 import { useState } from "react"
 import { apiJson } from "@/lib/api"
-import { Trash2 } from "lucide-react"
 
-export default function TechnicianDeviceTypesPage() {
+export default function TechnicianProblemsPage() {
+  const { data: problems = [] } = useProblems()
   const { data: types = [] } = useDeviceTypes()
   const [showForm, setShowForm] = useState(false)
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
+  const [deviceTypeId, setDeviceTypeId] = useState<string>("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
-
-  async function handleDelete(typeId: number) {
-    if (!confirm("Are you sure you want to delete this device type?")) return
-    
-    try {
-      await apiJson(`/devices/types/${typeId}`, {
-        method: "DELETE",
-      })
-      window.location.reload()
-    } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to delete device type")
-    }
-  }
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault()
     setError("")
     setSuccess("")
     
-    if (!name.trim()) {
-      setError("Device type name is required")
+    if (!name.trim() || !deviceTypeId) {
+      setError("Problem name and device type are required")
       return
     }
 
     setLoading(true)
     try {
-      await apiJson("/devices/types", {
+      await apiJson("/problems", {
         method: "POST",
         body: JSON.stringify({
           name: name.trim(),
           description: description.trim(),
+          device_type_id: parseInt(deviceTypeId),
         }),
       })
-      setSuccess("Device type created successfully")
+      setSuccess("Problem created successfully")
       setName("")
       setDescription("")
+      setDeviceTypeId("")
       setShowForm(false)
-      // Refresh page
       setTimeout(() => window.location.reload(), 1000)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create device type")
+      setError(err instanceof Error ? err.message : "Failed to create problem")
     } finally {
       setLoading(false)
     }
@@ -73,11 +64,11 @@ export default function TechnicianDeviceTypesPage() {
         <div className="flex flex-1 flex-col gap-4 p-4">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold">Device Types</h1>
-              <p className="text-muted-foreground">Manage device types for service</p>
+              <h1 className="text-3xl font-bold">Device Problems</h1>
+              <p className="text-muted-foreground">Manage device problems for troubleshooting</p>
             </div>
             <Button onClick={() => setShowForm(!showForm)}>
-              {showForm ? "Cancel" : "Add Device Type"}
+              {showForm ? "Cancel" : "Add Problem"}
             </Button>
           </div>
 
@@ -86,11 +77,11 @@ export default function TechnicianDeviceTypesPage() {
               <CardContent className="p-6">
                 <form onSubmit={handleCreate} className="space-y-4 max-w-md">
                   <div>
-                    <Label>Device Type Name *</Label>
+                    <Label>Problem Name *</Label>
                     <Input
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      placeholder="e.g., Laptop, Desktop, Tablet"
+                      placeholder="e.g., Screen Broken, Battery Not Charging"
                       disabled={loading}
                     />
                   </div>
@@ -100,50 +91,54 @@ export default function TechnicianDeviceTypesPage() {
                     <Input
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
-                      placeholder="Optional description"
+                      placeholder="Brief description of the problem"
                       disabled={loading}
                     />
+                  </div>
+
+                  <div>
+                    <Label>Device Type *</Label>
+                    <Select value={deviceTypeId} onValueChange={setDeviceTypeId} disabled={loading}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select device type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {types.map((type) => (
+                          <SelectItem key={type.id} value={String(type.id)}>
+                            {type.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   {error && <div className="text-red-600 text-sm">{error}</div>}
                   {success && <div className="text-green-600 text-sm">{success}</div>}
 
                   <Button type="submit" disabled={loading} className="w-full">
-                    {loading ? "Creating..." : "Create Device Type"}
+                    {loading ? "Creating..." : "Create Problem"}
                   </Button>
                 </form>
               </CardContent>
             </Card>
           )}
 
-           <div className="grid gap-4">
-             {types.map((type) => (
-               <Card key={type.id}>
-                 <CardContent className="p-6">
-                   <div className="flex justify-between items-start">
-                     <div>
-                       <h3 className="font-semibold text-lg">{type.name}</h3>
-                       {type.description && (
-                         <p className="text-muted-foreground text-sm">{type.description}</p>
-                       )}
-                       <p className="text-xs text-gray-500 mt-2">ID: {type.id}</p>
-                     </div>
-                     <Button
-                       variant="ghost"
-                       size="sm"
-                       onClick={() => handleDelete(type.id)}
-                       className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                     >
-                       <Trash2 className="h-4 w-4" />
-                     </Button>
-                   </div>
-                 </CardContent>
-               </Card>
-             ))}
-            {types.length === 0 && !showForm && (
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+            {problems.map((problem) => (
+              <Card key={problem.id}>
+                <CardContent className="p-6">
+                  <h3 className="font-semibold text-lg">{problem.name}</h3>
+                  {problem.description && (
+                    <p className="text-sm text-muted-foreground mt-2">{problem.description}</p>
+                  )}
+                  <p className="text-xs text-gray-500 mt-2">ID: {problem.id}</p>
+                </CardContent>
+              </Card>
+            ))}
+            {problems.length === 0 && !showForm && (
               <Card>
-                <CardContent className="p-6 text-center text-muted-foreground">
-                  No device types yet. Create one to get started.
+                <CardContent className="p-6 text-center text-muted-foreground col-span-full">
+                  No problems yet. Create one to get started.
                 </CardContent>
               </Card>
             )}

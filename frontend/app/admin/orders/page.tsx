@@ -16,9 +16,10 @@ import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialo
 import { Breadcrumb } from "@/components/breadcrumb"
 
 interface OrderDisplay {
-  id: number
-  device_id: number
-  problem_name: string
+  order_id: number
+  customer_name: string | null
+  device_name: string | null
+  problem_name: string | null
   status: string
   cost: string | number
   discount: string | number
@@ -38,9 +39,10 @@ export default function AdminOrdersPage() {
   const [deleteOrderId, setDeleteOrderId] = useState<number | null>(null)
 
   const displayData = data.map((order) => ({
-    id: order.id,
-    device_id: order.device_id,
-    problem_name: order.problem?.name || "—",
+    order_id: order.order_id,
+    customer_name: order.customer_name || "—",
+    device_name: order.device_name || "—",
+    problem_name: order.problem_name || "—",
     status: order.status,
     cost: order.cost,
     discount: order.discount,
@@ -50,16 +52,22 @@ export default function AdminOrdersPage() {
 
   const columns: ColumnDef<OrderDisplay>[] = [
     {
-      key: "id",
+      key: "order_id",
       header: "Order ID",
-      render: (order) => <span className="font-semibold text-sm">#{order.id}</span>,
+      render: (order) => <span className="font-semibold text-sm">#{order.order_id}</span>,
       sortable: true,
       width: "80px",
     },
     {
-      key: "device_id",
-      header: "Device ID",
-      render: (order) => <span className="font-mono text-sm">#{order.device_id}</span>,
+      key: "customer_name",
+      header: "Customer",
+      render: (order) => <span className="text-sm">{order.customer_name}</span>,
+      sortable: true,
+    },
+    {
+      key: "device_name",
+      header: "Device",
+      render: (order) => <span className="text-sm">{order.device_name}</span>,
       sortable: true,
     },
     {
@@ -121,7 +129,7 @@ export default function AdminOrdersPage() {
   ]
 
   const handleDeleteOrder = (order: OrderDisplay) => {
-    setDeleteOrderId(order.id)
+    setDeleteOrderId(order.order_id)
     setDeleteDialogOpen(true)
   }
 
@@ -185,9 +193,9 @@ export default function AdminOrdersPage() {
             columns={columns}
             loading={loading}
             emptyMessage="No orders found in the system"
-            searchableFields={["id", "device_id", "problem_name", "status"]}
-            onView={(order) => router.push(`/admin/orders/${order.id}`)}
-            onEdit={(order) => router.push(`/admin/orders/${order.id}/edit`)}
+            searchableFields={["order_id", "device_name", "problem_name", "status"]}
+            onView={(order) => router.push(`/admin/orders/${order.order_id}`)}
+            onEdit={(order) => router.push(`/admin/orders/${order.order_id}/edit`)}
             onDelete={handleDeleteOrder}
             itemsPerPage={limit}
           />

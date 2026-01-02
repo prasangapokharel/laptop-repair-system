@@ -15,8 +15,8 @@ import { useDeviceTypes } from "@/hooks/useDeviceTypes"
 
 export default function AdminAddModelPage() {
   const router = useRouter()
-  const { data: brands } = useDeviceBrands()
-  const { data: types } = useDeviceTypes()
+  const { data: brands = [] } = useDeviceBrands()
+  const { data: types = [] } = useDeviceTypes()
   const [name, setName] = useState("")
   const [brandId, setBrandId] = useState<number | null>(null)
   const [typeId, setTypeId] = useState<number | null>(null)

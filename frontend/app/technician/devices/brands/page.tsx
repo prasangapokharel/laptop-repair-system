@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { useDeviceBrands } from "@/hooks/useDeviceBrands"
 import { useState } from "react"
 import { apiJson } from "@/lib/api"
+import { Trash2 } from "lucide-react"
 
 export default function TechnicianDeviceBrandsPage() {
   const { data: brands = [] } = useDeviceBrands()
@@ -17,6 +18,19 @@ export default function TechnicianDeviceBrandsPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
+
+  async function handleDelete(brandId: number) {
+    if (!confirm("Are you sure you want to delete this brand?")) return
+    
+    try {
+      await apiJson(`/devices/brands/${brandId}`, {
+        method: "DELETE",
+      })
+      window.location.reload()
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to delete brand")
+    }
+  }
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault()
@@ -88,15 +102,25 @@ export default function TechnicianDeviceBrandsPage() {
             </Card>
           )}
 
-          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-            {brands.map((brand) => (
-              <Card key={brand.id}>
-                <CardContent className="p-6">
-                  <h3 className="font-semibold text-lg">{brand.name}</h3>
-                  <p className="text-xs text-gray-500 mt-2">ID: {brand.id}</p>
-                </CardContent>
-              </Card>
-            ))}
+           <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+             {brands.map((brand) => (
+               <Card key={brand.id}>
+                 <CardContent className="p-6">
+                   <div className="flex justify-between items-start">
+                     <h3 className="font-semibold text-lg">{brand.name}</h3>
+                     <Button
+                       variant="ghost"
+                       size="sm"
+                       onClick={() => handleDelete(brand.id)}
+                       className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                     >
+                       <Trash2 className="h-4 w-4" />
+                     </Button>
+                   </div>
+                   <p className="text-xs text-gray-500 mt-2">ID: {brand.id}</p>
+                 </CardContent>
+               </Card>
+             ))}
             {brands.length === 0 && !showForm && (
               <Card>
                 <CardContent className="p-6 text-center text-muted-foreground col-span-full">

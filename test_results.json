@@ -1,0 +1,10 @@
+{
+  "passed": 20,
+  "failed": 4,
+  "errors": [
+    "Fetch brands",
+    "Brands returned",
+    "Fetch types",
+    "Types returned"
+  ]
+}

@@ -7,7 +7,7 @@ from decimal import Decimal
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from sqlalchemy import text
-from db import engine
+from db import sync_engine
 from core.config import settings
 from utils.security import hash_password
 

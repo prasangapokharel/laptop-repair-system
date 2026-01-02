@@ -17,7 +17,7 @@ import { uploadProfileImage } from "@/hooks/useUpload"
 export default function AdminAddUserPage() {
   const { createUser, assignRole, loading, error } = useUserMutations()
   const router = useRouter()
-  const { data: roles } = useRoles()
+  const { data: roles = [] } = useRoles()
   const [fullName, setFullName] = useState("")
   const [phone, setPhone] = useState("")
   const [email, setEmail] = useState("")

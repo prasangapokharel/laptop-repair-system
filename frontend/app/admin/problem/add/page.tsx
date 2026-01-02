@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 export default function AdminAddProblemPage() {
   const { createProblem, loading, error } = useProblemMutations()
-  const { data: deviceTypes } = useDeviceTypes()
+  const { data: deviceTypes = [] } = useDeviceTypes()
   const router = useRouter()
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
