@@ -38,7 +38,7 @@ export const API_ENDPOINTS = {
     UPDATE: (id: string | number) => `/users/${id}`,
     DELETE: (id: string | number) => `/users/${id}`,
     CHANGE_PASSWORD: (id: string | number) => `/users/${id}/change-password`,
-    ASSIGN_ROLE: (id: string | number) => `/users/${id}/assign-role`,
+    ASSIGN_ROLE: (id: string | number) => `/users/${id}/roles`,
   },
 
   // Devices
@@ -119,13 +119,13 @@ export const API_ENDPOINTS = {
     DELETE: (id: string | number) => `/cost-settings/${id}`,
   },
 
+  // Messages
+  MESSAGES: "/messages",
+
   // Admin Dashboard
   ADMIN: {
     DASHBOARD: "/admin/dashboard",
   },
-
-  // File Upload
-  UPLOAD: "/upload",
 } as const
 
 // HTTP Status Codes

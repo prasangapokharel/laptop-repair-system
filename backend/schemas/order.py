@@ -31,8 +31,11 @@ class OrderUpdate(BaseModel):
 class OrderResponse(BaseModel):
     id: int
     device_id: int
+    device_name: Optional[str] = None
     customer_id: Optional[int]
+    customer_name: Optional[str] = None
     problem_id: Optional[int]
+    problem_name: Optional[str] = None
     cost: Decimal
     discount: Decimal
     total_cost: Decimal
@@ -49,23 +52,28 @@ class OrderResponse(BaseModel):
 
 
 class OrderListItemResponse(BaseModel):
-    """Enhanced order response for list view with related names instead of IDs"""
-    order_id: int
-    customer_name: Optional[str]
-    device_name: Optional[str]
-    problem_name: Optional[str]
+    """Enhanced order response for list view with IDs and related names"""
+    id: int
+    device_id: int
+    device_name: Optional[str] = None
+    customer_id: Optional[int] = None
+    customer_name: Optional[str] = None
+    problem_id: Optional[int] = None
+    problem_name: Optional[str] = None
     cost: Decimal
     discount: Decimal
     total_cost: Decimal
-    note: Optional[str]
+    note: Optional[str] = None
     status: str
-    estimated_completion_date: Optional[datetime]
-    completed_at: Optional[datetime]
+    estimated_completion_date: Optional[datetime] = None
+    completed_at: Optional[datetime] = None
     created_at: datetime
     updated_at: datetime
 
     class Config:
         from_attributes = True
+        # Only include defined fields, exclude any extra fields from source objects
+        extra = 'forbid'
 
 
 class OrderStatusHistoryResponse(BaseModel):

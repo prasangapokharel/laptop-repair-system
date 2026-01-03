@@ -12,6 +12,7 @@ import { TableList, type ColumnDef } from "@/components/tables/table-list"
 import { DollarSign, Plus } from "lucide-react"
 import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog"
 import { Breadcrumb } from "@/components/breadcrumb"
+import { toast } from "sonner"
 
 interface CostSettingDisplay {
   id: number
@@ -92,12 +93,17 @@ export default function AdminCostSettingsPage() {
   const confirmDelete = async () => {
     if (!deleteCostId) return
     setDeleteLoading(true)
+    toast.loading("Deleting cost setting...")
     try {
       await deleteCostSetting(deleteCostId)
+      toast.dismiss()
+      toast.success("Cost setting deleted successfully!")
       setDeleteDialogOpen(false)
       setDeleteCostId(null)
       router.refresh()
-    } catch (err) {
+    } catch (err: any) {
+      toast.dismiss()
+      toast.error(err.message || "Failed to delete cost setting")
       console.error("Failed to delete cost setting:", err)
     } finally {
       setDeleteLoading(false)

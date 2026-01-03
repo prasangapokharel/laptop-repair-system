@@ -3,6 +3,7 @@ from .device import DeviceType, Brand, Model, Device
 from .order import Order, OrderAssign, OrderStatusHistory
 from .payment import Payment
 from .problem import Problem, CostSetting
+from .message import Message
 
 __all__ = [
     "User",
@@ -19,5 +20,6 @@ __all__ = [
     "Payment",
     "Problem",
     "CostSetting",
+    "Message",
 ]
 

@@ -71,6 +71,23 @@ export default function AdminDevicesHubPage() {
                 </div>
               </CardContent>
             </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Devices</CardTitle>
+                <CardDescription>Manage individual device records in the system.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex gap-2">
+                  <Button asChild>
+                    <Link href="/admin/devices/list">View All</Link>
+                  </Button>
+                  <Button variant="outline" asChild>
+                    <Link href="/admin/devices/add">Add Device</Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </SidebarInset>

@@ -11,8 +11,11 @@ import { API_ENDPOINTS } from "@/config/api.config"
 export interface Order {
   id: number
   device_id: number
+  device_name?: string | null
   customer_id: number | null
+  customer_name?: string | null
   problem_id: number | null
+  problem_name?: string | null
   cost: string
   discount: string
   total_cost: string

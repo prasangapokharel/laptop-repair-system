@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useDeviceList } from "@/hooks/useDeviceList"
 import { useOrderMutations } from "@/hooks/useOrderMutations"
-import { useUsers } from "@/hooks/useUsers"
+import { useCustomers, useTechnicians } from "@/hooks/useUsers"
 import { useDeviceBrands } from "@/hooks/useDeviceBrands"
 import { useDeviceModels } from "@/hooks/useDeviceModels"
 import { useDeviceTypes } from "@/hooks/useDeviceTypes"
@@ -37,11 +37,18 @@ interface OrderCreationFormProps {
 export function OrderCreationForm({ onSuccess, onError }: OrderCreationFormProps) {
   const { data: devices = [] } = useDeviceList(100, 0)
   const { createOrder, assignOrder, loading, error: mutationError } = useOrderMutations()
-  const { data: users = [] } = useUsers(100, 0)
+  const { data: customers = [], loading: customersLoading, error: customersError } = useCustomers(100, 0)
+  const { data: technicians = [], loading: techniciansLoading, error: techniciansError } = useTechnicians(100, 0)
   const { data: brands = [] } = useDeviceBrands()
   const { data: models = [] } = useDeviceModels()
   const { data: types = [] } = useDeviceTypes()
   const { data: problems = [] } = useProblems(100, 0)
+  
+  // Debug logging
+  useEffect(() => {
+    console.log('Customers:', customers.length, 'Loading:', customersLoading, 'Error:', customersError)
+    console.log('Technicians:', technicians.length, 'Loading:', techniciansLoading, 'Error:', techniciansError)
+  }, [customers, customersLoading, customersError, technicians, techniciansLoading, techniciansError])
   
   const [deviceId, setDeviceId] = useState<number | null>(null)
   const [customerId, setCustomerId] = useState<number | null>(null)
@@ -61,6 +68,7 @@ export function OrderCreationForm({ onSuccess, onError }: OrderCreationFormProps
 
   const [openDevice, setOpenDevice] = useState(false)
   const [openProblem, setOpenProblem] = useState(false)
+  const [openCustomer, setOpenCustomer] = useState(false)
 
   const brandMap = Object.fromEntries(brands.map((b) => [b.id, b.name]))
   const modelMap = Object.fromEntries(models.map((m) => [m.id, m.name]))
@@ -198,17 +206,21 @@ export function OrderCreationForm({ onSuccess, onError }: OrderCreationFormProps
           </Popover>
         </div>
         <div className="space-y-2">
-          <Label>Assign To</Label>
+          <Label>Assign To (Technician)</Label>
           <Select onValueChange={(v) => setAssigneeId(Number(v) || null)}>
             <SelectTrigger>
-              <SelectValue placeholder="Optional assignee" />
+              <SelectValue placeholder="Select technician" />
             </SelectTrigger>
             <SelectContent>
-              {users.map((u) => (
-                <SelectItem key={u.id} value={String(u.id)}>
-                  {u.full_name} • #{u.id}
-                </SelectItem>
-              ))}
+              {technicians.length > 0 ? (
+                technicians.map((u) => (
+                  <SelectItem key={u.id} value={String(u.id)}>
+                    {u.full_name} • #{u.id}
+                  </SelectItem>
+                ))
+              ) : (
+                <div className="p-2 text-sm text-muted-foreground">No technicians available</div>
+              )}
             </SelectContent>
           </Select>
         </div>
@@ -253,18 +265,61 @@ export function OrderCreationForm({ onSuccess, onError }: OrderCreationFormProps
               </div>
             </div>
           ) : (
-            <Select onValueChange={(v) => setCustomerId(Number(v) || null)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select customer" />
-              </SelectTrigger>
-              <SelectContent>
-                {users.map((u) => (
-                  <SelectItem key={u.id} value={String(u.id)}>
-                    {u.full_name} • {u.phone}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <>
+              {customersError && (
+                <div className="text-sm text-red-600 mb-2">
+                  Error loading customers: {customersError}
+                </div>
+              )}
+              <Popover open={openCustomer} onOpenChange={setOpenCustomer}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={openCustomer}
+                    className="w-full justify-between"
+                    disabled={customersLoading}
+                  >
+                    {customersLoading ? "Loading customers..." : (
+                      customerId
+                        ? customers.find((u) => u.id === customerId)?.full_name || "Select customer..."
+                        : "Select customer..."
+                    )}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[400px] p-0">
+                  <Command>
+                    <CommandInput placeholder="Search customer..." />
+                    <CommandList>
+                      <CommandEmpty>
+                        {customersLoading ? "Loading..." : "No customer found."}
+                      </CommandEmpty>
+                      <CommandGroup>
+                        {customers.map((u) => (
+                          <CommandItem
+                            key={u.id}
+                            value={`${u.id} ${u.full_name} ${u.phone}`}
+                            onSelect={() => {
+                              setCustomerId(u.id)
+                              setOpenCustomer(false)
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                customerId === u.id ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            {u.full_name} • {u.phone}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            </>
           )}
         </div>
 

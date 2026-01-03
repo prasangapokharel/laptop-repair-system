@@ -15,6 +15,7 @@ import {
 
 export interface Order {
   order_id: number
+  id: number
   customer_name: string | null
   device_name: string | null
   problem_name: string | null
@@ -26,6 +27,15 @@ export interface Order {
   completed_at: string | null
   created_at: string
   updated_at: string
+}
+
+export interface OrderStatusHistory {
+  id: number
+  order_id: number
+  status: string
+  changed_by: number | null
+  note: string | null
+  created_at: string
 }
 
 interface OrderListResponse {
@@ -90,7 +100,13 @@ export function useOrders(filters?: OrderFilters) {
 
         const res = await api.get<OrderListResponse>(path)
         if (!cancelled) {
-          setData(res.items)
+          // Map 'id' to 'order_id' for backward compatibility
+          const mappedItems = res.items.map(item => ({
+            ...item,
+            order_id: (item as any).id || item.order_id,
+            id: (item as any).id || item.order_id
+          }))
+          setData(mappedItems)
           setTotal(res.total)
         }
       } catch (err) {
@@ -135,4 +151,54 @@ export function useUpdateOrder() {
  */
 export function useDeleteOrder() {
   return useApiDelete(API_ENDPOINTS.ORDERS.LIST)
+}
+
+/**
+ * Fetch order status history
+ */
+export function useOrderStatusHistory(orderId: number | null) {
+  const [data, setData] = useState<OrderStatusHistory[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!orderId) {
+      setData([])
+      setLoading(false)
+      return
+    }
+
+    let cancelled = false
+
+    const fetchHistory = async () => {
+      setLoading(true)
+      setError(null)
+      try {
+        const res = await api.get<OrderStatusHistory[]>(
+          `/api/v1/orders/${orderId}/history`
+        )
+        if (!cancelled) {
+          setData(res)
+        }
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Failed to load order history"
+        if (!cancelled) {
+          setError(message)
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false)
+        }
+      }
+    }
+
+    fetchHistory()
+
+    return () => {
+      cancelled = true
+    }
+  }, [orderId])
+
+  return { data, loading, error }
 }

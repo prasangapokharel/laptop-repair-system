@@ -4,14 +4,16 @@ import { AdminSidebar } from "@/components/sidebar/admin"
 import { SiteHeader } from "@/components/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import Link from "next/link"
 import { useUsers } from "@/hooks/useUsers"
 import { useUserMutations } from "@/hooks/useUserMutations"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Badge } from "@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { TableList, type ColumnDef } from "@/components/tables/table-list"
-import { Users, Plus } from "lucide-react"
+import { Users, Plus, Search } from "lucide-react"
 import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog"
 import { Breadcrumb } from "@/components/breadcrumb"
 
@@ -23,18 +25,25 @@ interface UserDisplay {
   role_name?: string
   is_active: boolean
   created_at: string
+  profile_picture?: string | null
 }
 
 export default function AdminUsersPage() {
   const router = useRouter()
   const [page, setPage] = useState(1)
+  const [searchQuery, setSearchQuery] = useState("")
   const limit = 15
   const offset = (page - 1) * limit
 
-  const { data, total, loading, error } = useUsers(limit, offset)
+  const { data, total, loading, error, refetch } = useUsers(limit, offset, undefined, searchQuery)
   const { deleteUser, loading: deleteLoading } = useUserMutations()
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [deleteUserId, setDeleteUserId] = useState<number | null>(null)
+
+  // Refetch when component mounts (when navigating back from add/edit page)
+  useEffect(() => {
+    refetch()
+  }, [])
 
   const displayData = data.map((user) => ({
     id: user.id,
@@ -44,6 +53,7 @@ export default function AdminUsersPage() {
     role_name: user.role?.name || "—",
     is_active: user.is_active,
     created_at: user.created_at,
+    profile_picture: user.profile_picture,
   }))
 
   const columns: ColumnDef<UserDisplay>[] = [
@@ -56,8 +66,18 @@ export default function AdminUsersPage() {
     },
     {
       key: "full_name",
-      header: "Name",
-      render: (user) => <span className="font-medium">{user.full_name}</span>,
+      header: "User",
+      render: (user) => (
+        <div className="flex items-center gap-3">
+          <Avatar className="h-9 w-9">
+            <AvatarImage src={user.profile_picture || undefined} alt={user.full_name} />
+            <AvatarFallback className="text-xs">
+              {user.full_name.split(" ").map((n) => n[0]).join("").substring(0, 2).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+          <span className="font-medium">{user.full_name}</span>
+        </div>
+      ),
       sortable: true,
     },
     {
@@ -162,6 +182,20 @@ export default function AdminUsersPage() {
             </div>
           )}
 
+          {/* Search Bar */}
+          <div className="relative max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+            <Input
+              placeholder="Search by name, email, or phone..."
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value)
+                setPage(1) // Reset to first page when searching
+              }}
+              className="pl-10"
+            />
+          </div>
+
           <TableList<UserDisplay>
             title="All Users"
             description={`Showing ${displayData.length} of ${total} total users`}
@@ -169,7 +203,8 @@ export default function AdminUsersPage() {
             columns={columns}
             loading={loading}
             emptyMessage="No users found in the system"
-            searchableFields={["full_name", "email", "phone"]}
+            searchableFields={[]}
+            onView={(user) => router.push(`/admin/users/${user.id}/view`)}
             onEdit={(user) => router.push(`/admin/users/${user.id}/edit`)}
             onDelete={handleDeleteUser}
             itemsPerPage={limit}

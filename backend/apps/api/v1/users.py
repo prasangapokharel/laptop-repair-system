@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, Query
-from utils.dependencies import require_admin, require_staff_or_customer, get_current_user
+from utils.dependencies import require_admin, require_staff_or_customer, get_current_user, require_admin_or_receptionist, require_admin_or_technician
 from sqlalchemy.orm import Session
-from sqlalchemy import select, func
+from sqlalchemy import select, func, or_
 from sqlalchemy.orm import selectinload
 from typing import List, Optional
 from db import get_db
@@ -11,6 +11,106 @@ from utils.security import hash_password
 from datetime import datetime
 
 router = APIRouter(prefix="/users", tags=["users"])
+
+
+@router.get("/customers", response_model=UserListResponse)
+async def list_customers(
+    limit: int = Query(100, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Get list of customers. Accessible by all authenticated users.
+    Receptionists and technicians need this to assign customers to orders.
+    """
+    try:
+        # Get total count of customers
+        count_query = (
+            select(func.count())
+            .select_from(User)
+            .join(User.roles)
+            .join(RoleEnroll.role)
+            .where(Role.name == "Customer")
+        )
+        count_result = db.execute(count_query)
+        total = count_result.scalar()
+
+        # Get customer items
+        query = (
+            select(User)
+            .options(selectinload(User.roles).selectinload(RoleEnroll.role))
+            .join(User.roles)
+            .join(RoleEnroll.role)
+            .where(Role.name == "Customer")
+            .limit(limit)
+            .offset(offset)
+        )
+        
+        result = db.execute(query)
+        items = result.scalars().all()
+        
+        return {
+            "items": items,
+            "total": total,
+            "page": (offset // limit) + 1,
+            "limit": limit
+        }
+    except Exception as e:
+        import traceback
+        error_msg = str(e)
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Database error: {error_msg[:100]}")
+
+
+@router.get("/technicians", response_model=UserListResponse)
+async def list_technicians(
+    limit: int = Query(100, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Get list of technicians. Accessible by all authenticated users.
+    Receptionists need this to assign technicians to orders.
+    """
+    try:
+        # Get total count of technicians
+        count_query = (
+            select(func.count())
+            .select_from(User)
+            .join(User.roles)
+            .join(RoleEnroll.role)
+            .where(Role.name == "Technician")
+        )
+        count_result = db.execute(count_query)
+        total = count_result.scalar()
+
+        # Get technician items
+        query = (
+            select(User)
+            .options(selectinload(User.roles).selectinload(RoleEnroll.role))
+            .join(User.roles)
+            .join(RoleEnroll.role)
+            .where(Role.name == "Technician")
+            .limit(limit)
+            .offset(offset)
+        )
+        
+        result = db.execute(query)
+        items = result.scalars().all()
+        
+        return {
+            "items": items,
+            "total": total,
+            "page": (offset // limit) + 1,
+            "limit": limit
+        }
+    except Exception as e:
+        import traceback
+        error_msg = str(e)
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Database error: {error_msg[:100]}")
 
 
 @router.post("", response_model=UserResponse, status_code=201)
@@ -47,17 +147,35 @@ async def create_user(
 @router.get("", response_model=UserListResponse)
 async def list_users(
     role_name: Optional[str] = Query(None),
+    search: Optional[str] = Query(None),
     limit: int = Query(10, ge=1, le=100),
     offset: int = Query(0, ge=0),
     current_user: User = Depends(require_admin),
     db: Session = Depends(get_db)
 ):
     try:
+        # Build base query
+        base_filters = []
+        
+        # Add search filter if provided
+        if search:
+            search_term = f"%{search}%"
+            base_filters.append(
+                or_(
+                    User.full_name.ilike(search_term),
+                    User.email.ilike(search_term),
+                    User.phone.ilike(search_term)
+                )
+            )
+        
         # Get total count
         count_query = select(func.count()).select_from(User)
         
         if role_name:
             count_query = count_query.join(User.roles).join(RoleEnroll.role).where(Role.name == role_name)
+        
+        if base_filters:
+            count_query = count_query.where(*base_filters)
 
         count_result = db.execute(count_query)
         total = count_result.scalar()
@@ -70,6 +188,9 @@ async def list_users(
         
         if role_name:
             query = query.join(User.roles).join(RoleEnroll.role).where(Role.name == role_name)
+        
+        if base_filters:
+            query = query.where(*base_filters)
             
         query = query.limit(limit).offset(offset)
         

@@ -23,6 +23,7 @@ class Order(Base):
 
     assigns = relationship("OrderAssign", back_populates="order", cascade="all, delete-orphan")
     status_history = relationship("OrderStatusHistory", back_populates="order", cascade="all, delete-orphan")
+    messages = relationship("Message", back_populates="order", cascade="all, delete-orphan")
     problem = relationship("Problem")
 
     __table_args__ = (

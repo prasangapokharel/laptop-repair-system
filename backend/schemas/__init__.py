@@ -3,6 +3,7 @@ from .device import DeviceTypeCreate, DeviceTypeResponse, BrandCreate, BrandResp
 from .order import OrderCreate, OrderResponse, OrderUpdate, OrderAssignCreate, OrderAssignResponse
 from .payment import PaymentCreate, PaymentResponse, PaymentUpdate
 from .auth import RegisterRequest, LoginRequest, LoginResponse, RefreshRequest, RefreshResponse, TokenResponse
+from .message import MessageCreate, MessageUpdate, MessageResponse, ConversationResponse
 
 __all__ = [
     "UserCreate",
@@ -35,5 +36,9 @@ __all__ = [
     "RefreshRequest",
     "RefreshResponse",
     "TokenResponse",
+    "MessageCreate",
+    "MessageUpdate",
+    "MessageResponse",
+    "ConversationResponse",
 ]
 

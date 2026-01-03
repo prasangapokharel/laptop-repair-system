@@ -1,13 +1,18 @@
 "use client";
-import { TechnicianSidebar } from "@/components/sidebar/technician";
-import { SiteHeader } from "@/components/site-header";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { useOrders, type Order } from "@/hooks/useOrders";
-import { useRouter } from "next/navigation";
-import { TableList, ColumnDef } from "@/components/tables/table-list";
-import { Badge } from "@/components/ui/badge";
-import { Breadcrumb } from "@/components/breadcrumb";
-import { ClipboardList } from "lucide-react";
+import { TechnicianSidebar } from "@/components/sidebar/technician"
+import { SiteHeader } from "@/components/site-header"
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
+import { Button } from "@/components/ui/button"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { useOrders } from "@/hooks/useOrders"
+import { useOrderMutations } from "@/hooks/useOrderMutations"
+import { useState } from "react"
+import { Badge } from "@/components/ui/badge"
+import { TableList, type ColumnDef } from "@/components/tables/table-list"
+import { Edit, Eye, Trash2, Plus, ClipboardList } from "lucide-react"
+import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog"
+import { Breadcrumb } from "@/components/breadcrumb"
 
 interface OrderDisplay {
   order_id: number
@@ -15,15 +20,22 @@ interface OrderDisplay {
   device_name: string | null
   problem_name: string | null
   status: string
-  cost: string | number
-  discount: string | number
-  total_cost: string | number
+  cost: string
+  discount: string
+  total_cost: string
   created_at: string
 }
 
 export default function TechnicianOrdersPage() {
-  const { data, loading } = useOrders({ limit: 15, offset: 0 });
-  const router = useRouter();
+  const router = useRouter()
+  const [page, setPage] = useState(1)
+  const limit = 12
+  const offset = (page - 1) * limit
+
+  const { data, total, loading, error } = useOrders({ limit, offset })
+  const { deleteOrder, loading: deleteLoading } = useOrderMutations()
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [deleteOrderId, setDeleteOrderId] = useState<number | null>(null)
 
   const displayData = data.map((order) => ({
     order_id: order.order_id,
@@ -35,7 +47,7 @@ export default function TechnicianOrdersPage() {
     discount: order.discount,
     total_cost: order.total_cost,
     created_at: order.created_at,
-  }));
+  }))
 
   const columns: ColumnDef<OrderDisplay>[] = [
     {
@@ -65,22 +77,19 @@ export default function TechnicianOrdersPage() {
     {
       key: "status",
       header: "Status",
-      render: (order) => (
-        <Badge
-          variant={
-            order.status === "Completed"
-              ? "default"
-              : order.status === "Pending"
-                ? "secondary"
-                : order.status === "In Progress"
-                  ? "default"
-                  : "destructive"
-          }
-          className="text-xs"
-        >
-          {order.status}
-        </Badge>
-      ),
+      render: (order) => {
+        const variants: Record<string, "default" | "destructive" | "outline" | "secondary"> = {
+          "Pending": "secondary",
+          "In Progress": "default",
+          "Completed": "default",
+          "Cancelled": "destructive",
+        }
+        return (
+          <Badge variant={variants[order.status] || "outline"}>
+            {order.status}
+          </Badge>
+        )
+      },
       sortable: true,
     },
     {
@@ -92,30 +101,41 @@ export default function TechnicianOrdersPage() {
     {
       key: "discount",
       header: "Discount",
-      render: (order) => (
-        <span className="font-mono text-sm text-green-600">-रु {order.discount || 0}</span>
-      ),
+      render: (order) => <span className="font-mono text-sm text-green-600">-रु {order.discount || 0}</span>,
       sortable: true,
     },
     {
       key: "total_cost",
       header: "Total",
-      render: (order) => (
-        <span className="font-mono font-semibold text-sm">रु {order.total_cost}</span>
-      ),
+      render: (order) => <span className="font-mono font-semibold text-sm">रु {order.total_cost}</span>,
       sortable: true,
     },
     {
       key: "created_at",
       header: "Created",
       render: (order) => (
-        <span className="text-sm text-muted-foreground">
-          {new Date(order.created_at).toLocaleDateString()}
-        </span>
+        <span className="text-sm text-muted-foreground">{new Date(order.created_at).toLocaleDateString()}</span>
       ),
       sortable: true,
     },
-  ];
+  ]
+
+  const handleDeleteOrder = async (order: OrderDisplay) => {
+    setDeleteOrderId(order.order_id)
+    setDeleteDialogOpen(true)
+  }
+
+  const confirmDelete = async () => {
+    if (!deleteOrderId) return
+    try {
+      await deleteOrder(deleteOrderId)
+      setDeleteDialogOpen(false)
+      setDeleteOrderId(null)
+      window.location.reload()
+    } catch (err) {
+      console.error("Failed to delete order:", err)
+    }
+  }
 
   return (
     <SidebarProvider>
@@ -123,6 +143,7 @@ export default function TechnicianOrdersPage() {
       <SidebarInset>
         <SiteHeader />
         <div className="flex-1 space-y-4 p-4 md:p-6">
+          {/* Breadcrumb */}
           <Breadcrumb
             items={[
               { label: "Dashboard", href: "/technician/dashboard" },
@@ -130,28 +151,45 @@ export default function TechnicianOrdersPage() {
             ]}
           />
 
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-              <ClipboardList className="h-8 w-8" />
-              Assigned Orders
-            </h1>
-            <p className="text-muted-foreground text-sm mt-1">
-              View and manage all assigned service orders
-            </p>
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+                <ClipboardList className="h-8 w-8" />
+                Orders
+              </h1>
+              <p className="text-muted-foreground text-sm mt-1">View and manage all service orders in the system</p>
+            </div>
+            <Button asChild className="gap-2">
+              <Link href="/technician/orders/add">
+                <Plus className="h-4 w-4" />
+                Create Order
+              </Link>
+            </Button>
           </div>
 
           <TableList<OrderDisplay>
-            title="Service Orders"
-            description="Browse orders assigned to you"
+            title="All Orders"
+            description="Browse and manage all customer service orders with status, cost, and details"
             data={displayData}
             columns={columns}
             loading={loading}
-            emptyMessage="No orders assigned"
+            emptyMessage="No orders found in the system"
             searchableFields={["order_id", "device_name", "problem_name", "status"]}
-            onView={(order) => router.push(`/technician/orders/${order.order_id}`)}
+            onView={(order) => router.push(`/technician/orders/${order.order_id}/view`)}
+            onEdit={(order) => router.push(`/technician/orders/${order.order_id}/edit`)}
+            onDelete={handleDeleteOrder}
           />
         </div>
       </SidebarInset>
+      <DeleteConfirmationDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Delete Order"
+        description={`Are you sure you want to delete order #${deleteOrderId}? This action cannot be undone.`}
+        onConfirm={confirmDelete}
+        loading={deleteLoading}
+      />
     </SidebarProvider>
-  );
+  )
 }

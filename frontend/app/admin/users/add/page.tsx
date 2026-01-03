@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation"
 import { useState } from "react"
 import Image from "next/image"
 import { uploadProfileImage } from "@/hooks/useUpload"
+import { toast } from "sonner"
 
 export default function AdminAddUserPage() {
   const { createUser, assignRole, loading, error } = useUserMutations()
@@ -51,9 +52,12 @@ export default function AdminAddUserPage() {
     try {
       let imagePath = profilePath
       if (file && !imagePath) {
+        toast.loading("Uploading profile image...")
         imagePath = await uploadProfileImage(fullName, file)
         setProfilePath(imagePath)
+        toast.dismiss()
       }
+      toast.loading("Creating user...")
       const user = await createUser({
         full_name: fullName,
         phone,
@@ -65,8 +69,13 @@ export default function AdminAddUserPage() {
       if (roleId) {
         await assignRole(user.id, roleId)
       }
+      toast.dismiss()
+      toast.success("User created successfully!")
       router.push("/admin/users")
-    } catch {}
+    } catch (err: any) {
+      toast.dismiss()
+      toast.error(err.message || "Failed to create user")
+    }
   }
 
   return (
@@ -78,8 +87,8 @@ export default function AdminAddUserPage() {
           <div className="flex items-center justify-between space-y-2 py-4">
              <h2 className="text-3xl font-bold tracking-tight">Add User</h2>
           </div>
-          <div className="w-full">
-            <Card className="w-full">
+          <div className="w-full max-w-4xl mx-auto">
+            <Card>
               <CardContent className="p-6">
                 <form onSubmit={onSubmit} className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
@@ -147,10 +156,10 @@ export default function AdminAddUserPage() {
                       onDrop={onDrop}
                       className="flex items-center gap-4 rounded-lg border border-dashed p-3"
                     >
-                      <div className="flex flex-col gap-2">
+                      <div className="flex flex-col gap-2 flex-1">
                         <Input
                           type="file"
-                          accept="image/png,image/jpeg"
+                          accept="image/png,image/jpeg,image/jpg,image/webp"
                           onChange={(e) =>
                             onFileSelected(e.target.files?.[0] || null)
                           }
@@ -159,25 +168,42 @@ export default function AdminAddUserPage() {
                           type="button"
                           variant="outline"
                           onClick={async () => {
-                            if (file) {
-                              const p = await uploadProfileImage(fullName, file)
-                              setProfilePath(p)
+                            if (!file) {
+                              toast.error("Please select an image first")
+                              return
+                            }
+                            if (!fullName.trim()) {
+                              toast.error("Please enter full name first")
+                              return
+                            }
+                            try {
+                              toast.loading("Uploading to Cloudinary...")
+                              const cloudinaryUrl = await uploadProfileImage(fullName, file)
+                              setProfilePath(cloudinaryUrl)
+                              toast.dismiss()
+                              toast.success("Image uploaded successfully!")
+                            } catch (err: any) {
+                              toast.dismiss()
+                              toast.error(err.message || "Failed to upload image")
                             }
                           }}
-                          disabled={!file}
+                          disabled={!file || !fullName.trim()}
                         >
-                          Upload
+                          Upload to Cloud
                         </Button>
                         {profilePath && (
-                          <span className="text-xs text-muted-foreground">
-                            {profilePath}
-                          </span>
+                          <div className="space-y-1">
+                            <span className="text-xs font-medium text-green-600">✓ Uploaded to CDN</span>
+                            <p className="text-xs text-muted-foreground break-all">
+                              {profilePath}
+                            </p>
+                          </div>
                         )}
                       </div>
-                      <div className="relative h-16 w-16 overflow-hidden rounded-lg border">
-                        {preview ? (
+                      <div className="relative h-20 w-20 overflow-hidden rounded-lg border flex-shrink-0">
+                        {preview || profilePath ? (
                           <Image
-                            src={preview}
+                            src={preview || profilePath || ""}
                             alt="Preview"
                             fill
                             className="object-cover"
@@ -189,6 +215,9 @@ export default function AdminAddUserPage() {
                         )}
                       </div>
                     </div>
+                    <p className="text-xs text-muted-foreground">
+                      Upload to Cloudinary CDN before creating user. Supported formats: PNG, JPEG, JPG, WebP
+                    </p>
                   </div>
                   {error && (
                     <p className="text-sm text-red-500" role="alert">

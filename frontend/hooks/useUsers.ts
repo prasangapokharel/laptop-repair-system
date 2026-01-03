@@ -57,7 +57,7 @@ interface UpdateUserPayload {
 /**
  * Fetch users with optional filters and pagination
  */
-export function useUsers(limit = 10, offset = 0, roleName?: string) {
+export function useUsers(limit = 10, offset = 0, roleName?: string, search?: string) {
   const [data, setData] = useState<User[]>([])
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -80,6 +80,9 @@ export function useUsers(limit = 10, offset = 0, roleName?: string) {
         params.set("offset", String(offset))
         if (roleName) {
           params.set("role_name", roleName)
+        }
+        if (search) {
+          params.set("search", search)
         }
 
         const path =
@@ -110,7 +113,7 @@ export function useUsers(limit = 10, offset = 0, roleName?: string) {
     return () => {
       cancelled = true
     }
-  }, [limit, offset, roleName, refreshKey])
+  }, [limit, offset, roleName, search, refreshKey])
 
   return { data, total, loading, error, refetch }
 }
@@ -134,4 +137,164 @@ export function useUpdateUser() {
  */
 export function useDeleteUser() {
   return useApiDelete(API_ENDPOINTS.USERS.LIST)
+}
+
+/**
+ * Fetch single user by ID
+ */
+export function useUserDetail(userId: number | null) {
+  const [data, setData] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!userId) {
+      setData(null)
+      setLoading(false)
+      return
+    }
+
+    let cancelled = false
+
+    async function fetchUser() {
+      setLoading(true)
+      setError(null)
+      try {
+        const res = await api.get<User>(`${API_ENDPOINTS.USERS.LIST}/${userId}`)
+        if (!cancelled) {
+          setData(res)
+        }
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Failed to load user"
+        if (!cancelled) {
+          setError(message)
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false)
+        }
+      }
+    }
+
+    fetchUser()
+
+    return () => {
+      cancelled = true
+    }
+  }, [userId])
+
+  return { data, loading, error }
+}
+
+/**
+ * Fetch customers only - accessible by all authenticated users
+ * This endpoint is specifically for receptionists/technicians to access customer data
+ */
+export function useCustomers(limit = 100, offset = 0) {
+  const [data, setData] = useState<User[]>([])
+  const [total, setTotal] = useState(0)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [refreshKey, setRefreshKey] = useState(0)
+
+  const refetch = useCallback(() => {
+    setRefreshKey((prev) => prev + 1)
+  }, [])
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function fetchCustomers() {
+      setLoading(true)
+      setError(null)
+      try {
+        const params = new URLSearchParams()
+        params.set("limit", String(limit))
+        params.set("offset", String(offset))
+
+        const path = `/users/customers?${params.toString()}`
+
+        const res = await api.get<UserListResponse>(path)
+        if (!cancelled) {
+          setData(res.items)
+          setTotal(res.total)
+        }
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Failed to load customers"
+        if (!cancelled) {
+          setError(message)
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false)
+        }
+      }
+    }
+
+    fetchCustomers()
+
+    return () => {
+      cancelled = true
+    }
+  }, [limit, offset, refreshKey])
+
+  return { data, total, loading, error, refetch }
+}
+
+/**
+ * Fetch technicians only - accessible by all authenticated users
+ * This endpoint is specifically for receptionists to assign technicians to orders
+ */
+export function useTechnicians(limit = 100, offset = 0) {
+  const [data, setData] = useState<User[]>([])
+  const [total, setTotal] = useState(0)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [refreshKey, setRefreshKey] = useState(0)
+
+  const refetch = useCallback(() => {
+    setRefreshKey((prev) => prev + 1)
+  }, [])
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function fetchTechnicians() {
+      setLoading(true)
+      setError(null)
+      try {
+        const params = new URLSearchParams()
+        params.set("limit", String(limit))
+        params.set("offset", String(offset))
+
+        const path = `/users/technicians?${params.toString()}`
+
+        const res = await api.get<UserListResponse>(path)
+        if (!cancelled) {
+          setData(res.items)
+          setTotal(res.total)
+        }
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Failed to load technicians"
+        if (!cancelled) {
+          setError(message)
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false)
+        }
+      }
+    }
+
+    fetchTechnicians()
+
+    return () => {
+      cancelled = true
+    }
+  }, [limit, offset, refreshKey])
+
+  return { data, total, loading, error, refetch }
 }

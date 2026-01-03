@@ -15,6 +15,64 @@ from utils.dependencies import get_current_user, require_admin, require_staff_or
 router = APIRouter(prefix="/orders", tags=["orders"])
 
 
+def enrich_order_with_names(order: Order, db: Session) -> dict:
+    """Helper function to add device_name, customer_name, and problem_name to order"""
+    from models.device import Brand, Model
+    
+    order_dict = {
+        "id": order.id,
+        "device_id": order.device_id,
+        "customer_id": order.customer_id,
+        "problem_id": order.problem_id,
+        "cost": order.cost,
+        "discount": order.discount,
+        "total_cost": order.total_cost,
+        "note": order.note,
+        "status": order.status,
+        "estimated_completion_date": order.estimated_completion_date,
+        "completed_at": order.completed_at,
+        "created_at": order.created_at,
+        "updated_at": order.updated_at,
+        "problem": order.problem,
+    }
+    
+    # Get device name
+    device = db.execute(
+        select(Device).options(
+            selectinload(Device.brand),
+            selectinload(Device.model)
+        ).where(Device.id == order.device_id)
+    ).scalar_one_or_none()
+    
+    device_name = None
+    if device and device.model:
+        device_name = f"{device.brand.name} {device.model.name}" if device.brand else device.model.name
+    order_dict["device_name"] = device_name
+    
+    # Get customer name
+    customer_name = None
+    if order.customer_id:
+        customer = db.execute(
+            select(User).where(User.id == order.customer_id)
+        ).scalar_one_or_none()
+        customer_name = customer.full_name if customer else None
+    order_dict["customer_name"] = customer_name
+    
+    # Get problem name
+    problem_name = None
+    if order.problem_id:
+        if order.problem:
+            problem_name = order.problem.name
+        else:
+            problem = db.execute(
+                select(Problem).where(Problem.id == order.problem_id)
+            ).scalar_one_or_none()
+            problem_name = problem.name if problem else None
+    order_dict["problem_name"] = problem_name
+    
+    return order_dict
+
+
 @router.post("", response_model=OrderResponse, status_code=201)
 async def create_order(
     data: OrderCreate,
@@ -53,8 +111,12 @@ async def create_order(
             .where(Order.id == order.id)
         )
         order = result.scalar_one_or_none()
+    
+    # Enrich order with names
+    order_dict = enrich_order_with_names(order, db)
+    order_dict["problem"] = order.problem
         
-    return order
+    return order_dict
 
 
 @router.get("", response_model=OrderListResponse)
@@ -67,6 +129,8 @@ async def list_orders(
     current_user: User = Depends(require_staff_or_customer),
     db: Session = Depends(get_db)
 ):
+    from models.device import Brand, Model
+    
     # Base query for counting
     count_query = select(func.count()).select_from(Order)
     if status is not None:
@@ -79,9 +143,9 @@ async def list_orders(
     count_result = db.execute(count_query)
     total = count_result.scalar()
 
-    # Query with joins to get names
+    # Build main query
     query = select(Order).options(
-        selectinload(Order.problem).selectinload(Problem.device_type)
+        selectinload(Order.problem),
     )
     if status is not None:
         query = query.where(Order.status == status)
@@ -94,12 +158,17 @@ async def list_orders(
     result = db.execute(query)
     orders = result.scalars().all()
     
-    # Transform orders to include names
+    # Transform orders to include names - fetch all related data efficiently
     items = []
     for order in orders:
-        # Get device name
-        device_result = db.execute(select(Device).where(Device.id == order.device_id))
-        device = device_result.scalar_one_or_none()
+        # Get device with brand and model in one query
+        device = db.execute(
+            select(Device).options(
+                selectinload(Device.brand),
+                selectinload(Device.model)
+            ).where(Device.id == order.device_id)
+        ).scalar_one_or_none()
+        
         device_name = None
         if device and device.model:
             device_name = f"{device.brand.name} {device.model.name}" if device.brand else device.model.name
@@ -107,21 +176,26 @@ async def list_orders(
         # Get customer name
         customer_name = None
         if order.customer_id:
-            customer_result = db.execute(select(User).where(User.id == order.customer_id))
-            customer = customer_result.scalar_one_or_none()
+            customer = db.execute(
+                select(User).where(User.id == order.customer_id)
+            ).scalar_one_or_none()
             customer_name = customer.full_name if customer else None
         
         # Get problem name
         problem_name = None
         if order.problem_id:
-            problem_result = db.execute(select(Problem).where(Problem.id == order.problem_id))
-            problem = problem_result.scalar_one_or_none()
+            problem = db.execute(
+                select(Problem).where(Problem.id == order.problem_id)
+            ).scalar_one_or_none()
             problem_name = problem.name if problem else None
         
         item = OrderListItemResponse(
-            order_id=order.id,
-            customer_name=customer_name,
+            id=order.id,
+            device_id=order.device_id,
             device_name=device_name,
+            customer_id=order.customer_id,
+            customer_name=customer_name,
+            problem_id=order.problem_id,
             problem_name=problem_name,
             cost=order.cost,
             discount=order.discount,
@@ -133,14 +207,17 @@ async def list_orders(
             created_at=order.created_at,
             updated_at=order.updated_at
         )
+        # Debug: print first item to see if names are populated
+        if len(items) == 0:
+            print(f"DEBUG: First item - device_name={device_name}, customer_name={customer_name}, problem_name={problem_name}")
         items.append(item)
     
-    return {
-        "items": items,
-        "total": total,
-        "page": (offset // limit) + 1,
-        "limit": limit
-    }
+    return OrderListResponse(
+        items=items,
+        total=total,
+        page=(offset // limit) + 1,
+        limit=limit
+    )
 
 
 @router.get("/{order_id}", response_model=OrderResponse)
@@ -159,7 +236,12 @@ async def get_order(
     order = result.scalar_one_or_none()
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
-    return order
+    
+    # Enrich order with names
+    order_dict = enrich_order_with_names(order, db)
+    order_dict["problem"] = order.problem
+    
+    return order_dict
 
 
 @router.patch("/{order_id}", response_model=OrderResponse)
@@ -207,8 +289,12 @@ async def update_order(
             .where(Order.id == order.id)
         )
         order = result.scalar_one_or_none()
+    
+    # Enrich order with names
+    order_dict = enrich_order_with_names(order, db)
+    order_dict["problem"] = order.problem
 
-    return order
+    return order_dict
 
 
 @router.delete("/{order_id}", status_code=204)

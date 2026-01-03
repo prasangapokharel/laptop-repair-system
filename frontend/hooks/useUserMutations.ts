@@ -89,6 +89,7 @@ export function useUserMutations() {
       setError(null)
       try {
         await api.post(API_ENDPOINTS.USERS.ASSIGN_ROLE(user_id), {
+          user_id,
           role_id,
         })
       } catch (err) {

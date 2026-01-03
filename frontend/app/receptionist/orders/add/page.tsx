@@ -23,7 +23,7 @@ export default function ReceptionistAddOrderPage() {
               <CardContent className="p-6">
                 <OrderCreationForm
                   onSuccess={(orderId) => {
-                    router.push("/receptionist/orders")
+                    router.push(`/receptionist/orders/${orderId}/view`)
                   }}
                   onError={(error) => {
                     console.error(error)

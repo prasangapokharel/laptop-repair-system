@@ -47,7 +47,7 @@ export default function ReceptionistEditOrderPage() {
         note: note,
         status: status || "Pending",
       })
-      router.push(`/receptionist/orders/${id}`)
+      router.push(`/receptionist/orders/${id}/view`)
     } catch (err) {
       console.error("Failed to update order:", err)
     }
@@ -194,8 +194,9 @@ export default function ReceptionistEditOrderPage() {
 
                 {/* Order Metadata */}
                 <div className="p-3 bg-muted rounded-lg space-y-1 text-sm">
-                  <p><span className="text-muted-foreground">Device ID:</span> <span className="font-mono">#{data.device_id}</span></p>
-                  <p><span className="text-muted-foreground">Customer ID:</span> <span className="font-mono">#{data.customer_id || "N/A"}</span></p>
+                  <p><span className="text-muted-foreground">Device:</span> <span className="font-semibold">{data.device_name || `#${data.device_id}`}</span></p>
+                  <p><span className="text-muted-foreground">Customer:</span> <span className="font-semibold">{data.customer_name || `#${data.customer_id}` || "N/A"}</span></p>
+                  <p><span className="text-muted-foreground">Problem:</span> <span className="font-semibold">{data.problem_name || `#${data.problem_id}` || "N/A"}</span></p>
                   <p><span className="text-muted-foreground">Created:</span> <span>{new Date(data.created_at).toLocaleString()}</span></p>
                 </div>
 

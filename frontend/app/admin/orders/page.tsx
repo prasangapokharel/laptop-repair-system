@@ -185,7 +185,7 @@ export default function AdminOrdersPage() {
             loading={loading}
             emptyMessage="No orders found in the system"
             searchableFields={["order_id", "device_name", "problem_name", "status"]}
-            onView={(order) => router.push(`/admin/orders/${order.order_id}`)}
+            onView={(order) => router.push(`/admin/orders/${order.order_id}/view`)}
             onEdit={(order) => router.push(`/admin/orders/${order.order_id}/edit`)}
             onDelete={handleDeleteOrder}
             itemsPerPage={limit}

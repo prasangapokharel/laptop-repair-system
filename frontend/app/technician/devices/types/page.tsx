@@ -2,29 +2,46 @@
 import { TechnicianSidebar } from "@/components/sidebar/technician"
 import { SiteHeader } from "@/components/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
-import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
 import { useDeviceTypes } from "@/hooks/useDeviceTypes"
-import { useState } from "react"
+import { TableList } from "@/components/tables/table-list"
+import type { ColumnDef } from "@/components/tables/table-list"
+import { useRouter } from "next/navigation"
 import { apiJson } from "@/lib/api"
-import { Trash2 } from "lucide-react"
+import { Plus } from "lucide-react"
+
+interface DeviceType {
+  id: number
+  name: string
+  description?: string
+}
 
 export default function TechnicianDeviceTypesPage() {
-  const { data: types = [] } = useDeviceTypes()
-  const [showForm, setShowForm] = useState(false)
-  const [name, setName] = useState("")
-  const [description, setDescription] = useState("")
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
-  const [success, setSuccess] = useState("")
+  const { data: types = [], isLoading } = useDeviceTypes()
+  const router = useRouter()
 
-  async function handleDelete(typeId: number) {
-    if (!confirm("Are you sure you want to delete this device type?")) return
-    
+  const columns: ColumnDef<DeviceType>[] = [
+    {
+      key: "id",
+      header: "ID",
+      width: "80px",
+    },
+    {
+      key: "name",
+      header: "Device Type Name",
+    },
+    {
+      key: "description",
+      header: "Description",
+      render: (item) => item.description || "—",
+    },
+  ]
+
+  async function handleDelete(item: DeviceType) {
+    if (!confirm(`Are you sure you want to delete device type "${item.name}"?`)) return
+
     try {
-      await apiJson(`/devices/types/${typeId}`, {
+      await apiJson(`/devices/types/${item.id}`, {
         method: "DELETE",
       })
       window.location.reload()
@@ -33,36 +50,8 @@ export default function TechnicianDeviceTypesPage() {
     }
   }
 
-  async function handleCreate(e: React.FormEvent) {
-    e.preventDefault()
-    setError("")
-    setSuccess("")
-    
-    if (!name.trim()) {
-      setError("Device type name is required")
-      return
-    }
-
-    setLoading(true)
-    try {
-      await apiJson("/devices/types", {
-        method: "POST",
-        body: JSON.stringify({
-          name: name.trim(),
-          description: description.trim(),
-        }),
-      })
-      setSuccess("Device type created successfully")
-      setName("")
-      setDescription("")
-      setShowForm(false)
-      // Refresh page
-      setTimeout(() => window.location.reload(), 1000)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create device type")
-    } finally {
-      setLoading(false)
-    }
+  function handleEdit(item: DeviceType) {
+    router.push(`/technician/devices/types/${item.id}/edit`)
   }
 
   return (
@@ -74,80 +63,24 @@ export default function TechnicianDeviceTypesPage() {
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-3xl font-bold">Device Types</h1>
-              <p className="text-muted-foreground">Manage device types for service</p>
+              <p className="text-muted-foreground">Manage device types for your service</p>
             </div>
-            <Button onClick={() => setShowForm(!showForm)}>
-              {showForm ? "Cancel" : "Add Device Type"}
+            <Button onClick={() => router.push("/technician/devices/types/create")}>
+              <Plus className="w-4 h-4 mr-2" />
+              Add Device Type
             </Button>
           </div>
 
-          {showForm && (
-            <Card>
-              <CardContent className="p-6">
-                <form onSubmit={handleCreate} className="space-y-4 max-w-md">
-                  <div>
-                    <Label>Device Type Name *</Label>
-                    <Input
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder="e.g., Laptop, Desktop, Tablet"
-                      disabled={loading}
-                    />
-                  </div>
-
-                  <div>
-                    <Label>Description</Label>
-                    <Input
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      placeholder="Optional description"
-                      disabled={loading}
-                    />
-                  </div>
-
-                  {error && <div className="text-red-600 text-sm">{error}</div>}
-                  {success && <div className="text-green-600 text-sm">{success}</div>}
-
-                  <Button type="submit" disabled={loading} className="w-full">
-                    {loading ? "Creating..." : "Create Device Type"}
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-          )}
-
-           <div className="grid gap-4">
-             {types.map((type) => (
-               <Card key={type.id}>
-                 <CardContent className="p-6">
-                   <div className="flex justify-between items-start">
-                     <div>
-                       <h3 className="font-semibold text-lg">{type.name}</h3>
-                       {type.description && (
-                         <p className="text-muted-foreground text-sm">{type.description}</p>
-                       )}
-                       <p className="text-xs text-gray-500 mt-2">ID: {type.id}</p>
-                     </div>
-                     <Button
-                       variant="ghost"
-                       size="sm"
-                       onClick={() => handleDelete(type.id)}
-                       className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                     >
-                       <Trash2 className="h-4 w-4" />
-                     </Button>
-                   </div>
-                 </CardContent>
-               </Card>
-             ))}
-            {types.length === 0 && !showForm && (
-              <Card>
-                <CardContent className="p-6 text-center text-muted-foreground">
-                  No device types yet. Create one to get started.
-                </CardContent>
-              </Card>
-            )}
-          </div>
+          <TableList
+            data={types}
+            columns={columns}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            searchableFields={["name", "description"]}
+            loading={isLoading}
+            emptyMessage="No device types found. Create one to get started."
+            itemsPerPage={15}
+          />
         </div>
       </SidebarInset>
     </SidebarProvider>
